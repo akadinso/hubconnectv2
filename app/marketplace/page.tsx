@@ -60,8 +60,14 @@ async function Results({
 
   const listings = await getListings(supabase, {
     limit: 60,
-    search: q,
-    type,
+  });
+
+  const filteredListings = listings.filter((listing) => {
+    const haystack =
+      `${listing.title ?? ""} ${listing.description ?? ""}`.toLowerCase();
+    const matchesQuery = !q || haystack.includes(q.toLowerCase());
+    const matchesType = !type || listing.type === type;
+    return matchesQuery && matchesType;
   });
 
   return (
@@ -71,7 +77,8 @@ async function Results({
           {q ? `Results for "${q}"` : "Marketplace"}
         </h1>
         <p className="text-sm text-muted-foreground">
-          {listings.length} {listings.length === 1 ? "listing" : "listings"}
+          {filteredListings.length}{" "}
+          {filteredListings.length === 1 ? "listing" : "listings"}
         </p>
       </div>
 

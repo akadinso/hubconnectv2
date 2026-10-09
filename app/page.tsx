@@ -48,7 +48,7 @@ export default async function Home() {
               <ShieldCheck className="size-4 text-primary" />
               <span>Signed in as Administrator</span>
             </div>
-            <Button size="sm" variant="outline" asChild>
+            <Button size="sm" variant="outline" >
               <Link href="/admin">Open Admin Dashboard</Link>
             </Button>
           </div>
@@ -63,7 +63,7 @@ export default async function Home() {
             Recommended for you
           </h1>
 
-          <Button variant="outline" size="sm" asChild>
+          <Button variant="outline" size="sm">
             <Link href="/marketplace">View More</Link>
           </Button>
         </div>
