@@ -32,31 +32,52 @@ export function CarouselComponent({
   variant = "large",
   className,
 }: CarouselComponentProps) {
+  if (!listings || listings.length === 0) {
+    return (
+      <section className={cn("w-full min-w-0 space-y-2", className)}>
+        {title && (
+          <h2 className="flex items-center gap-2 text-base font-semibold">
+            {icon}
+            {title}
+          </h2>
+        )}
+        <p className="text-sm text-muted-foreground">No listings yet.</p>
+      </section>
+    );
+  }
+
   return (
     <section className={cn("w-full min-w-0 space-y-4", className)}>
-      {title && (
-        <h2 className="flex items-center gap-2 text-base font-semibold">
-          {icon}
-          {title}
-        </h2>
-      )}
+      <Carousel opts={{ align: "start", dragFree: true }} className="w-full">
+        {/* Header with Title & Next/Prev Controls */}
+        <div className="flex items-center justify-between pb-1">
+          {title ? (
+            <h2 className="flex items-center gap-2 text-base font-semibold">
+              {icon}
+              {title}
+            </h2>
+          ) : (
+            <div />
+          )}
 
-      {listings.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No listings yet.</p>
-      ) : (
-        <Carousel opts={{ align: "start", dragFree: true }} className="w-full">
-          <CarouselContent className="-ml-4">
-            {listings.map((listing) => (
-              <CarouselItem
-                key={listing.id}
-                className={cn("pl-4", VARIANTS[variant])}
-              >
-                <ListingCard listing={listing} />
-              </CarouselItem>
-            ))}
-          </CarouselContent>
-        </Carousel>
-      )}
+          {/* Navigation controls positioned static in header */}
+          <div className="hidden sm:flex items-center gap-2">
+            <CarouselPrevious className="static translate-x-0 translate-y-0 h-8 w-8" />
+            <CarouselNext className="static translate-x-0 translate-y-0 h-8 w-8" />
+          </div>
+        </div>
+
+        <CarouselContent className="-ml-4 pt-1">
+          {listings.map((listing, index) => (
+            <CarouselItem
+              key={listing.id ? `${listing.id}-${index}` : index}
+              className={cn("pl-4", VARIANTS[variant])}
+            >
+              <ListingCard listing={listing} />
+            </CarouselItem>
+          ))}
+        </CarouselContent>
+      </Carousel>
     </section>
   );
 }
