@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { Badge } from "@/components/ui/badge"
+import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardAction,
@@ -8,104 +8,142 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
-import { TrendingUpIcon, TrendingDownIcon } from "lucide-react"
+} from "@/components/ui/card";
+import {
+  UsersIcon,
+  ShieldCheckIcon,
+  UserCheckIcon,
+  StoreIcon,
+} from "lucide-react";
 
-export function SectionCards() {
+export type AdminUser = {
+  id: string;
+  fullName: string;
+  email: string;
+  username: string;
+  avatarUrl: string | null;
+  role: string;
+  verified: boolean;
+  onboarded: boolean;
+  bio: string;
+  createdAt: string;
+};
+
+interface SectionCardsProps {
+  users?: AdminUser[];
+  totalListings?: number;
+}
+
+export function SectionCards({
+  users = [],
+  totalListings = 0,
+}: SectionCardsProps) {
+  const totalUsers = users.length;
+  const verifiedUsers = users.filter((u) => u.verified).length;
+  const onboardedUsers = users.filter((u) => u.onboarded).length;
+
+  const verifiedRate =
+    totalUsers > 0 ? Math.round((verifiedUsers / totalUsers) * 100) : 0;
+  const onboardedRate =
+    totalUsers > 0 ? Math.round((onboardedUsers / totalUsers) * 100) : 0;
+
   return (
     <div className="grid grid-cols-1 gap-4 px-4 *:data-[slot=card]:bg-linear-to-t *:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card *:data-[slot=card]:shadow-xs lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-4 dark:*:data-[slot=card]:bg-card">
       <Card className="@container/card">
         <CardHeader>
-          <CardDescription>Total Revenue</CardDescription>
+          <CardDescription>Total Users</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            $1,250.00
+            {totalUsers.toLocaleString()}
           </CardTitle>
           <CardAction>
-            <Badge variant="outline">
-              <TrendingUpIcon
-              />
-              +12.5%
+            <Badge variant="outline" className="gap-1">
+              <UsersIcon className="size-3 text-muted-foreground" />
+              Total
             </Badge>
           </CardAction>
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
           <div className="line-clamp-1 flex gap-2 font-medium">
-            Trending up this month{" "}
-            <TrendingUpIcon className="size-4" />
+            Registered accounts
           </div>
           <div className="text-muted-foreground">
-            Visitors for the last 6 months
+            All registered HubConnect users
           </div>
         </CardFooter>
       </Card>
+
       <Card className="@container/card">
         <CardHeader>
-          <CardDescription>New Customers</CardDescription>
+          <CardDescription>Verified Users</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            1,234
+            {verifiedUsers.toLocaleString()}
           </CardTitle>
           <CardAction>
-            <Badge variant="outline">
-              <TrendingDownIcon
-              />
-              -20%
+            <Badge
+              variant="outline"
+              className="gap-1 text-green-600 dark:text-green-400"
+            >
+              <ShieldCheckIcon className="size-3" />
+              {verifiedRate}%
             </Badge>
           </CardAction>
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
           <div className="line-clamp-1 flex gap-2 font-medium">
-            Down 20% this period{" "}
-            <TrendingDownIcon className="size-4" />
+            Identity verified
           </div>
           <div className="text-muted-foreground">
-            Acquisition needs attention
+            {verifiedRate}% of total user base
           </div>
         </CardFooter>
       </Card>
+
       <Card className="@container/card">
         <CardHeader>
-          <CardDescription>Active Accounts</CardDescription>
+          <CardDescription>Onboarded Users</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            45,678
+            {onboardedUsers.toLocaleString()}
           </CardTitle>
           <CardAction>
-            <Badge variant="outline">
-              <TrendingUpIcon
-              />
-              +12.5%
+            <Badge
+              variant="outline"
+              className="gap-1 text-blue-600 dark:text-blue-400"
+            >
+              <UserCheckIcon className="size-3" />
+              {onboardedRate}%
             </Badge>
           </CardAction>
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
           <div className="line-clamp-1 flex gap-2 font-medium">
-            Strong user retention{" "}
-            <TrendingUpIcon className="size-4" />
+            Completed setup
           </div>
-          <div className="text-muted-foreground">Engagement exceed targets</div>
+          <div className="text-muted-foreground">Active and ready accounts</div>
         </CardFooter>
       </Card>
+
       <Card className="@container/card">
         <CardHeader>
-          <CardDescription>Growth Rate</CardDescription>
+          <CardDescription>Total Listings</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            4.5%
+            {totalListings.toLocaleString()}
           </CardTitle>
           <CardAction>
-            <Badge variant="outline">
-              <TrendingUpIcon
-              />
-              +4.5%
+            <Badge variant="outline" className="gap-1">
+              <StoreIcon className="size-3 text-muted-foreground" />
+              Inventory
             </Badge>
           </CardAction>
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
           <div className="line-clamp-1 flex gap-2 font-medium">
-            Steady performance increase{" "}
-            <TrendingUpIcon className="size-4" />
+            Marketplace products
           </div>
-          <div className="text-muted-foreground">Meets growth projections</div>
+          <div className="text-muted-foreground">
+            Active seller inventory items
+          </div>
         </CardFooter>
       </Card>
     </div>
-  )
+  );
 }

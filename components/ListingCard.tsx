@@ -6,19 +6,37 @@ import { Badge } from "@/components/ui/badge";
 import type { Listing } from "@/types/listing";
 
 export function ListingCard({ listing }: { listing: Listing }) {
-  const { seller, rating, reviewCount } = listing;
+  const seller = listing.seller ?? {
+    name: "Unknown Seller",
+    avatarUrl: null,
+    verified: false,
+    isNew: false,
+  };
+
+  const sellerInitials = (seller.name || "US")
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+
+  const imageUrl = listing.image ?? listing.image_url ?? null;
 
   return (
     <Link href={`/listings/${listing.id}`} className="group block space-y-2">
       <div className="relative aspect-square overflow-hidden rounded-xl bg-muted">
-        {listing.image && (
+        {imageUrl ? (
           <Image
-            src={listing.image}
-            alt={listing.title}
+            src={imageUrl}
+            alt={listing.title ?? "Listing image"}
             fill
             sizes="(min-width: 1024px) 25vw, 60vw"
             className="object-cover transition-transform duration-300 group-hover:scale-105"
           />
+        ) : (
+          <div className="flex h-full items-center justify-center text-xs text-muted-foreground">
+            No Image
+          </div>
         )}
       </div>
 
@@ -37,7 +55,7 @@ export function ListingCard({ listing }: { listing: Listing }) {
             <AvatarImage src={seller.avatarUrl} alt={seller.name} />
           )}
           <AvatarFallback className="text-[10px]">
-            {seller.name.slice(0, 2).toUpperCase()}
+            {sellerInitials}
           </AvatarFallback>
         </Avatar>
 
@@ -55,10 +73,10 @@ export function ListingCard({ listing }: { listing: Listing }) {
           </Badge>
         )}
 
-        {rating != null && (
-          <span className="ml-auto shrink-0 text-xs">
-            {rating.toFixed(1)}
-            {reviewCount ? ` (${reviewCount})` : ""}
+        {listing.rating != null && (
+          <span className="ml-auto shrink-0 text-xs text-muted-foreground font-mono">
+            ★ {listing.rating.toFixed(1)}
+            {listing.reviewCount ? ` (${listing.reviewCount})` : ""}
           </span>
         )}
       </div>

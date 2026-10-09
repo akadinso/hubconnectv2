@@ -1,9 +1,31 @@
-import React from 'react'
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
 
-const AdminLayout = ({ children }: { children: React.ReactNode }) => {
-  return (
-    <div>{children}</div>
-  )
+export default async function AdminLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (authError || !user) {
+    redirect("/auth/login");
+  }
+
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
+  if (profileError || profile?.role !== "admin") {
+    redirect("/");
+  }
+
+  return <>{children}</>;
 }
-
-export default AdminLayout
