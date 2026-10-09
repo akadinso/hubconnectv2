@@ -1,18 +1,23 @@
+export type Seller = {
+  id?: string;
+  name: string;
+  avatarUrl?: string | null;
+  role?: string | null;
+  verified?: boolean;
+  isNew?: boolean;
+};
+
 export type Listing = {
-  image_url: string | null | undefined;
-  price: any;
-  type: string;
-  description: string;
   id: string;
   title: string;
-  subtitle?: string;
+  subtitle?: string | null;
+  description?: string;
+  price?: number;
+  type?: "product" | "service" | string;
   image?: string | null;
+  image_url?: string | null;
   rating?: number | null;
-  reviewCount?: number;
-  seller: {
-    name: string;
-    avatarUrl?: string | null;
-    verified?: boolean;
-    isNew?: boolean;
-  };
+  reviewCount?: number | null;
+  createdAt?: string;
+  seller?: Seller;
 };
