@@ -62,11 +62,11 @@ export function ListingCard({ listing }: { listing: Listing }) {
       {/* Title & Price Header Row */}
       <div className="min-w-0 space-y-0.5">
         <div className="flex items-start justify-between gap-2">
-          <p className="truncate text-sm font-semibold transition-colors group-hover:text-primary">
+          <p className="truncate text-sm font-semibold transition-colors group-hover:text-gold">
             {listing.title}
           </p>
           {formattedPrice && (
-            <span className="shrink-0 text-sm font-bold text-foreground">
+            <span className="shrink-0 text-sm font-bold text-navy-blue">
               {formattedPrice}
             </span>
           )}

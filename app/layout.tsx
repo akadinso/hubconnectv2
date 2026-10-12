@@ -28,11 +28,14 @@ export const metadata: Metadata = {
 
 function NavbarFallback() {
   return (
-    <MaxWidthWrapper className="flex h-16 w-full items-center px-4">
-      <span className="text-lg font-semibold tracking-tight">HubConnect</span>
-    </MaxWidthWrapper>
+    <header className="w-full bg-navy text-white">
+      <MaxWidthWrapper className="flex h-16 items-center px-4">
+        <span className="text-lg font-semibold tracking-tight">HubConnect</span>
+      </MaxWidthWrapper>
+    </header>
   );
 }
+
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html

@@ -52,56 +52,66 @@ export const Navbar = async () => {
   ) : null;
 
   return (
-    <MaxWidthWrapper className="flex h-16 w-full flex-row items-center justify-between gap-2 px-4 dark:bg-white bg-dark">
-      {/* Logo + Mobile Menu */}
-      <div className="flex h-full w-full flex-row items-center justify-between gap-2 md:w-auto">
-        <Link
-          href="/"
-          className="flex flex-row items-center gap-2 text-lg font-semibold tracking-tight"
-        >
-          HubConnect
-        </Link>
-
-        <div className="md:hidden">
-          <MobileMenu
-            isUser={!!user}
-            roleLink={roleLink}
-            userSlot={userDialog}
-          />
-        </div>
-      </div>
-
-      {/* Search */}
-      <div className="mx-5 hidden w-full md:mx-40 md:block">
-        <SearchComponent />
-      </div>
-
-      {/* Desktop Navigation */}
-      <nav className="hidden items-center gap-8 md:flex">
-        <div className="flex flex-row items-center gap-3">
-          <Favourites />
-          <Cart />
-        </div>
-
-        {roleLink && (
-          <Link href={roleLink.href}>
-            <Button variant="outline">{roleLink.label}</Button>
+    // Full-width navy bar; the content inside stays within the max width
+    <header className="w-full bg-navy text-white">
+      <MaxWidthWrapper className="flex h-16 w-full flex-row items-center justify-between gap-2 px-4">
+        {/* Logo + Mobile Menu */}
+        <div className="flex h-full w-full flex-row items-center justify-between gap-2 md:w-auto">
+          <Link
+            href="/"
+            className="flex flex-row items-center gap-2 text-lg font-semibold tracking-tight text-white"
+          >
+            HubConnect
           </Link>
-        )}
 
-        {user ? (
-          userDialog
-        ) : (
-          <div className="flex flex-row items-center gap-4">
-            <Link href="/auth/login">
-              <Button variant="secondary">Sign In</Button>
-            </Link>
-            <Link href="/auth/sign-up">
-              <Button variant="default">Register</Button>
-            </Link>
+          <div className="md:hidden">
+            <MobileMenu
+              isUser={!!user}
+              roleLink={roleLink}
+              userSlot={userDialog}
+            />
           </div>
-        )}
-      </nav>
-    </MaxWidthWrapper>
+        </div>
+
+        {/* Search */}
+        <div className="mx-5 hidden w-full md:mx-40 md:block">
+          <SearchComponent />
+        </div>
+
+        {/* Desktop Navigation */}
+        <nav className="hidden items-center gap-8 md:flex">
+          <div className="flex flex-row items-center gap-3">
+            <Favourites />
+            <Cart />
+          </div>
+
+          {roleLink && (
+            <Link href={roleLink.href}>
+              <Button
+                variant="outline"
+                className="border-white/30 bg-transparent text-white hover:bg-white/10 hover:text-white"
+              >
+                {roleLink.label}
+              </Button>
+            </Link>
+          )}
+
+          {user ? (
+            userDialog
+          ) : (
+            <div className="flex flex-row items-center gap-4">
+              <Link href="/auth/login">
+                <Button variant="secondary">Sign In</Button>
+              </Link>
+              <Link href="/auth/sign-up">
+                <Button className="bg-gold text-navy hover:bg-gold/90">
+                  Register
+                </Button>
+              </Link>
+            </div>
+          )}
+        </nav>
+      </MaxWidthWrapper>
+    </header>
   );
 };

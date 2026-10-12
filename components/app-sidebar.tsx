@@ -30,58 +30,58 @@ import {
   FileChartColumnIcon,
   FileIcon,
   CommandIcon,
+  Store,
 } from "lucide-react";
 import { CurrentUserAvatar } from "./current-user-avatar";
 import Link from "next/link";
+import { createClient } from "@/lib/supabase/client";
 
 const data = {
   navMain: [
     {
       title: "Dashboard",
-      url: "#",
+      url: "/dashboard",
       icon: <LayoutDashboardIcon />,
     },
     {
       title: "User Management",
-      url: "#",
+      url: "/admin/users",
       icon: <ListIcon />,
     },
-    {
-      title: "Analytics",
-      url: "#",
-      icon: <ChartBarIcon />,
-    },
+
     {
       title: "Store Management",
-      url: "#",
-      icon: <FolderIcon />,
+      url: "/admin/stores",
+      icon: <Store />,
+    },
+    {
+      title: "Report Management",
+      url: "/admin/reports",
+      icon: <FileTextIcon />,
     },
     {
       title: "Team",
-      url: "#",
+      url: "/admin/team",
       icon: <UsersIcon />,
     },
   ],
 
   navSecondary: [
     {
-      title: "Settings",
-      url: "#",
+      title: "Eduvos Docs",
+      url: "/docs",
       icon: <Settings2Icon />,
     },
     {
       title: "Get Help",
-      url: "#",
+      url: "/get-help",
       icon: <CircleHelpIcon />,
-    },
-    {
-      title: "Search",
-      url: "#",
-      icon: <SearchIcon />,
     },
   ],
 };
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+export async function AppSidebar({
+  ...props
+}: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
@@ -100,8 +100,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavMain items={data.navMain} />
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
-      <SidebarFooter>
-        <CurrentUserAvatar />
+      <SidebarFooter className="flex flex-col items-start gap-2 border-t p-4">
+        <div className="flex flex-row justify-start gap-3 items-center">
+          <CurrentUserAvatar />
+          <h1 className="text-sm font-semibold">Admin</h1>
+        </div>
       </SidebarFooter>
     </Sidebar>
   );
