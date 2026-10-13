@@ -16,7 +16,7 @@ export default function DisputePage({
   params: Promise<{ id: string }>;
 }) {
   return (
-    <Suspense fallback={<MaxWidthWrapper className="w-full py-10" />}>
+    <Suspense fallback={<MaxWidthWrapper className="w-full py-10" >Dispute</MaxWidthWrapper>}>
       <DisputeContent params={params} />
     </Suspense>
   );

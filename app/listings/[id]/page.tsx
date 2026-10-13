@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { ArrowLeft, BadgeCheck, MessageCircle, Star } from "lucide-react";
+import { ArrowLeft, BadgeCheck, Flag, MessageCircle, Star } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/server";
 import MaxWidthWrapper from "@/components/MaxWidthWrapper";
@@ -13,6 +13,7 @@ import { Separator } from "@/components/ui/separator";
 import { ListingActions } from "@/components/ListingActions";
 import { ReviewForm } from "@/components/ReviewForm";
 import { startConversation } from "./actions";
+import { ReportDialog } from "@/components/ReportDialog";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -208,6 +209,28 @@ async function ListingContent({ params }: { params: Promise<{ id: string }> }) {
                   Message seller
                 </Button>
               </form>
+              <div className="flex gap-2">
+                <ReportDialog
+                  kind="listing"
+                  targetListingId={listing.id}
+                  trigger={
+                    <Button variant="ghost" size="sm" type="button">
+                      <Flag />
+                      Report listing
+                    </Button>
+                  }
+                />
+                <ReportDialog
+                  kind="user"
+                  targetUserId={listing.seller_id}
+                  trigger={
+                    <Button variant="ghost" size="sm" type="button">
+                      <Flag />
+                      Report seller
+                    </Button>
+                  }
+                />
+              </div>
             </div>
           )}
         </div>

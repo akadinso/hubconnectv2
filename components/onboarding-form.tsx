@@ -14,6 +14,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Camera, Pin, Repeat, Truck } from "lucide-react";
 
 const MAX_AVATAR_SIZE = 2 * 1024 * 1024; // 2MB
 
@@ -115,11 +116,106 @@ export function OnboardingForm({
     <Card>
       <CardHeader>
         <CardTitle className="text-2xl">Welcome To HubConnect</CardTitle>
-        <CardDescription>Step {step} of 2</CardDescription>
+        <CardDescription>
+          Before your first listing goes live, here’s what helps buyers trust
+          you from the start
+        </CardDescription>
+        <CardDescription>Step {step} of 3</CardDescription>
       </CardHeader>
 
       <CardContent className="space-y-6">
         {step === 1 && (
+          <>
+            <div className="space-y-2">
+              <div>
+                <div className="flex flex-row">
+                  <Repeat />
+                  <div className="flex flex-col">
+                    <h1 className="text-primary text-md">Reply quickly</h1>
+                    <span className="text-muted-foreground text-sm">
+                      Buyers are far more likely to follow through when a seller
+                      responds fast
+                    </span>
+                  </div>
+                </div>
+                <div className="flex flex-row">
+                  <Truck />
+                  <div className="flex flex-col">
+                    <h1 className="text-primary text-md">Reply quickly</h1>
+                    <span className="text-muted-foreground text-sm">
+                      Buyers are far more likely to follow through when a seller
+                      responds fast
+                    </span>
+                  </div>
+                </div>
+                <div className="flex flex-row">
+                  <Camera />
+                  <div className="flex flex-col">
+                    <h1 className="text-primary text-md">Reply quickly</h1>
+                    <span className="text-muted-foreground text-sm">
+                      Buyers are far more likely to follow through when a seller
+                      responds fast
+                    </span>
+                  </div>
+                </div>
+                <div className="flex flex-row">
+                  <Pin />
+                  <div className="flex flex-col">
+                    <h1 className="text-primary text-md">Reply quickly</h1>
+                    <span className="text-muted-foreground text-sm">
+                      Buyers are far more likely to follow through when a seller
+                      responds fast
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h1>What you get as a seller</h1>
+                <div className="grid grid-rows-3">
+                  <Card>
+                    <CardTitle>Free while we launch</CardTitle>
+                    <CardDescription>
+                      No listing fees during the trial. Any future fees will be
+                      announced well in advance.
+                    </CardDescription>
+                  </Card>
+                  <Card>
+                    <CardTitle>Clear posting rules</CardTitle>
+                    <CardDescription>
+                      Post and edit listings any time. Listing limit: [to
+                      confirm with the team].
+                    </CardDescription>
+                  </Card>
+                  <Card>
+                    <CardTitle>Seen across campus</CardTitle>
+                    <CardDescription>
+                      Featured in our launch campaign, on posters and at
+                      on-campus pop-ups – we bring the buyers.
+                    </CardDescription>
+                  </Card>
+                </div>
+              </div>
+            </div>
+
+            <Button
+              className="w-full text-muted-foreground"
+              disabled={!canContinue}
+              onClick={() => setStep(2)}
+            >
+              Start Selling
+            </Button>
+
+            <Button
+              className="w-full text-muted-foreground"
+              disabled={!canContinue}
+              onClick={() => setStep(2)}
+            >
+              Skip For Now
+            </Button>
+          </>
+        )}
+        {step === 2 && (
           <>
             <div className="space-y-2">
               <Label htmlFor="full-name">Full name</Label>
@@ -149,7 +245,7 @@ export function OnboardingForm({
           </>
         )}
 
-        {step === 2 && (
+        {step === 3 && (
           <>
             <div className="flex flex-col items-center gap-4">
               <Avatar className="h-24 w-24">
