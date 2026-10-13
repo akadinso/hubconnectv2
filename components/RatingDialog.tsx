@@ -18,8 +18,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
-import { submitReview } from "@/app/listings/[id]/actions";
-
+import { submitReview } from "@/app/(main)/listings/[id]/actions";
 export function RatingDialog({
   listingId,
   listingTitle,

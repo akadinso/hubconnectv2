@@ -8,8 +8,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import { submitReview } from "@/app/listings/[id]/actions";
-
+import { submitReview } from "@/app/(main)/listings/[id]/actions";
 export function ReviewForm({
   listingId,
   initialRating,

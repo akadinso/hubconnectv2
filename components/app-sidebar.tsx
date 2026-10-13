@@ -32,15 +32,15 @@ import {
   CommandIcon,
   Store,
 } from "lucide-react";
-import { CurrentUserAvatar } from "./current-user-avatar";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { UserDialog } from "./UserDialog";
 
 const data = {
   navMain: [
     {
       title: "Dashboard",
-      url: "/dashboard",
+      url: "/admin",
       icon: <LayoutDashboardIcon />,
     },
     {
@@ -51,18 +51,13 @@ const data = {
 
     {
       title: "Store Management",
-      url: "/admin/stores",
+      url: "/admin/store",
       icon: <Store />,
     },
     {
       title: "Report Management",
       url: "/admin/reports",
       icon: <FileTextIcon />,
-    },
-    {
-      title: "Team",
-      url: "/admin/team",
-      icon: <UsersIcon />,
     },
   ],
 
@@ -79,6 +74,28 @@ const data = {
     },
   ],
 };
+
+const supabase = await createClient();
+
+const {
+  data: { user },
+} = await supabase.auth.getUser();
+
+let fullName: string | null = null;
+let username: string | null = null;
+let avatarUrl: string | null = null;
+
+if (user) {
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role, full_name, username, avatar_url")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  fullName = profile?.full_name ?? null;
+  username = profile?.username ?? null;
+  avatarUrl = profile?.avatar_url ?? null;
+}
 export async function AppSidebar({
   ...props
 }: React.ComponentProps<typeof Sidebar>) {
@@ -100,10 +117,11 @@ export async function AppSidebar({
         <NavMain items={data.navMain} />
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
-      <SidebarFooter className="flex flex-col items-start gap-2 border-t p-4">
-        <div className="flex flex-row justify-start gap-3 items-center">
-          <CurrentUserAvatar />
-          <h1 className="text-sm font-semibold">Admin</h1>
+      <SidebarFooter className="flex flex-row items-center gap-4 border-t p-4">
+        <UserDialog fullName={fullName} avatarUrl={avatarUrl} role={null} />
+        <div>
+          <h1 className="text-sm">{fullName}</h1>
+          <p className="text-sm text-muted-foreground">{username}</p>
         </div>
       </SidebarFooter>
     </Sidebar>
