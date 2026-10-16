@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { REASONS } from "@/lib/report-reasons";
+import { cleanPhotoPaths } from "@/lib/photos";
 
 type Result = { error?: string };
 
@@ -28,6 +29,7 @@ export async function submitReport(input: {
   targetListingId?: string;
   reason: string;
   details?: string;
+  photos?: string[];
 }): Promise<Result> {
   if (!REASONS[input.kind]?.includes(input.reason)) {
     return { error: "Please choose a reason." };
@@ -39,6 +41,11 @@ export async function submitReport(input: {
   } = await supabase.auth.getUser();
   if (!user) return { error: "Please sign in." };
 
+  const photos = cleanPhotoPaths(input.photos, user.id);
+  if (!photos) {
+    return { error: "One of the photos couldn't be used. Please try again." };
+  }
+
   const details = (input.details ?? "").trim().slice(0, 1000);
 
   const { error } = await supabase.from("reports").insert({
@@ -48,6 +55,7 @@ export async function submitReport(input: {
     target_listing_id: input.kind === "listing" ? input.targetListingId : null,
     reason: input.reason,
     details: details || null,
+    photos,
   });
 
   if (error) {
@@ -62,6 +70,7 @@ export async function openDispute(
   orderId: string,
   reason: string,
   details?: string,
+  photoPaths?: string[],
 ): Promise<Result> {
   if (!REASONS.dispute.includes(reason)) {
     return { error: "Please choose a reason." };
@@ -73,11 +82,17 @@ export async function openDispute(
   } = await supabase.auth.getUser();
   if (!user) return { error: "Please sign in." };
 
+  const photos = cleanPhotoPaths(photoPaths, user.id);
+  if (!photos) {
+    return { error: "One of the photos couldn't be used. Please try again." };
+  }
+
   const { error } = await supabase.from("disputes").insert({
     order_id: orderId,
     opened_by: user.id,
     reason,
     details: (details ?? "").trim().slice(0, 1000) || null,
+    photos,
   });
 
   if (error) {
@@ -151,7 +166,9 @@ export async function resolveDispute(
 
   const final = status !== "in_review";
   const clean = note.trim();
-  if (final && clean.length < 3) return { error: "Add a short note for the record." };
+  if (final && clean.length < 3) {
+    return { error: "Add a short note for the record." };
+  }
 
   const { supabase, user } = ctx;
 

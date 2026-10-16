@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { submitReview } from "@/app/(main)/listings/[id]/actions";
+import { removePhotos, uploadPhotos } from "@/lib/upload-photos";
 export function RatingDialog({
   listingId,
   listingTitle,
@@ -43,12 +44,24 @@ export function RatingDialog({
   function handleSubmit() {
     setError(null);
     startTransition(async () => {
-      const result = await submitReview(listingId, rating, comment);
+      const uploaded = await uploadPhotos("review-photos", files);
+      if ("error" in uploaded) {
+        setError(uploaded.error);
+        return;
+      }
+      const result = await submitReview(
+        listingId,
+        rating,
+        comment,
+        uploaded.paths,
+      );
       if (result.error) {
+        await removePhotos("review-photos", uploaded.paths);
         setError(result.error);
         return;
       }
       toast.success("Thanks for your review");
+      setFiles([]);
       setOpen(false);
       router.refresh();
     });

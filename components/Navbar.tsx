@@ -85,6 +85,15 @@ export const Navbar = async () => {
             <Cart />
           </div>
 
+          <Link href="/orders">
+            <Button
+              variant="ghost"
+              className="text-white hover:bg-white/10 hover:text-white"
+            >
+              Orders
+            </Button>
+          </Link>
+
           {roleLink && (
             <Link href={roleLink.href}>
               <Button

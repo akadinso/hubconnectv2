@@ -10,6 +10,8 @@ import { resolveReport } from "@/app/actions/trust";
 import MaxWidthWrapper from "@/components/MaxWidthWrapper";
 import { StatusBadge } from "@/components/StatusBadge";
 import { ResolutionPanel } from "@/components/ResolutionPanel";
+import { signedPhotoUrls } from "@/lib/photos";
+import { PhotoGrid } from "@/components/PhotoGrid";
 
 export default function ReportPage({
   params,
@@ -49,6 +51,11 @@ async function ReportContent({ params }: { params: Promise<{ id: string }> }) {
 
   const listing = one<any>(report.listing);
   const closed = report.status !== "open";
+  const photos = await signedPhotoUrls(
+    supabase,
+    "report-photos",
+    report.photos,
+  );
 
   const actions = [
     {
@@ -142,6 +149,13 @@ async function ReportContent({ params }: { params: Promise<{ id: string }> }) {
           <p>{report.details || "None provided."}</p>
         </div>
       </section>
+
+      {photos.length > 0 && (
+        <section className="space-y-2 rounded-xl border p-4">
+          <p className="text-sm font-medium">Photos from the reporter</p>
+          <PhotoGrid urls={photos} />
+        </section>
+      )}
 
       <ResolutionPanel
         actions={actions}

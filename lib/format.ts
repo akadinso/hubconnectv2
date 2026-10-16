@@ -9,6 +9,17 @@ export function nameOf(
   return p?.full_name || p?.username || fallback;
 }
 
+export function initialsOf(name: string) {
+  return (
+    name
+      .split(" ")
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((p) => p[0]?.toUpperCase())
+      .join("") || "?"
+  );
+}
+
 export const shortId = (id: string) => `HC-${id.slice(0, 8).toUpperCase()}`;
 
 export const rand = (n: number | string | null | undefined) =>

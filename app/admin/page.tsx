@@ -5,14 +5,11 @@ import {
   type User,
 } from "@supabase/supabase-js";
 
-import { AppSidebar } from "@/components/app-sidebar";
 import { DataTable } from "@/components/data-table";
 import { ListingsTable, type AdminListing } from "@/components/listings-table";
 import { SectionCards } from "@/components/section-cards";
-import { SiteHeader } from "@/components/site-header";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Card, CardContent } from "@/components/ui/card";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { requireAdmin } from "@/lib/admin";
 import { formatDate, nameOf, one, rand, shortId } from "@/lib/format";
 
@@ -243,7 +240,7 @@ async function AdminContent() {
                     Nothing to review.
                   </p>
                 ) : (
-                  <ul className="divide-y rounded-xl bg-muted-foreground">
+                  <ul className="divide-y rounded-xl">
                     {reports.map((r) => {
                       const target =
                         r.kind === "listing"

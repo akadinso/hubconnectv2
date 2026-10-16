@@ -2,6 +2,8 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+
+import { cleanPhotoPaths } from "@/lib/photos";
 import { createClient } from "@/lib/supabase/server";
 
 export async function startConversation(listingId: string) {
@@ -54,6 +56,7 @@ export async function submitReview(
   listingId: string,
   rating: number,
   comment: string,
+  photos: string[] = [],
 ): Promise<{ error?: string }> {
   if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
     return { error: "Please choose a rating from 1 to 5." };
@@ -66,12 +69,31 @@ export async function submitReview(
   } = await supabase.auth.getUser();
   if (!user) return { error: "Please sign in to leave a review." };
 
+  const newPhotos = cleanPhotoPaths(photos, user.id);
+  if (!newPhotos) {
+    return { error: "One of the photos couldn't be used. Please try again." };
+  }
+
+  // Editing a review keeps the photos it already has and adds the new ones
+  const { data: existing } = await supabase
+    .from("reviews")
+    .select("photos")
+    .eq("listing_id", listingId)
+    .eq("reviewer_id", user.id)
+    .maybeSingle();
+
+  const kept: string[] = existing?.photos ?? [];
+  if (kept.length + newPhotos.length > 4) {
+    return { error: "A review can have up to 4 photos in total." };
+  }
+
   const { error } = await supabase.from("reviews").upsert(
     {
       listing_id: listingId,
       reviewer_id: user.id,
       rating,
       comment: comment.trim() || null,
+      photos: [...kept, ...newPhotos],
     },
     { onConflict: "listing_id,reviewer_id" },
   );

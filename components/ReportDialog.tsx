@@ -15,7 +15,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { PhotoPicker } from "@/components/PhotoPicker";
 import { COPY, REASONS, type ReportKind } from "@/lib/report-reasons";
+import { removePhotos, uploadPhotos } from "@/lib/upload-photos";
 import { openDispute, submitReport } from "@/app/actions/trust";
 
 type Props = {
@@ -36,6 +38,7 @@ export function ReportDialog({
   const [open, setOpen] = React.useState(false);
   const [reason, setReason] = React.useState("");
   const [details, setDetails] = React.useState("");
+  const [files, setFiles] = React.useState<File[]>([]);
   const [error, setError] = React.useState<string | null>(null);
   const [pending, setPending] = React.useState(false);
 
@@ -49,24 +52,33 @@ export function ReportDialog({
     setPending(true);
     setError(null);
 
+    const uploaded = await uploadPhotos("report-photos", files);
+    if ("error" in uploaded) {
+      setError(uploaded.error);
+      setPending(false);
+      return;
+    }
+
     const result =
       kind === "dispute"
-        ? await openDispute(orderId!, reason, details)
+        ? await openDispute(orderId!, reason, details, uploaded.paths)
         : await submitReport({
             kind,
             targetUserId,
             targetListingId,
             reason,
             details,
+            photos: uploaded.paths,
           });
 
-    setPending(false);
-
     if (result.error) {
+      await removePhotos("report-photos", uploaded.paths); // don't leave orphans behind
       setError(result.error);
+      setPending(false);
       return;
     }
 
+    setPending(false);
     toast.success(
       kind === "dispute"
         ? "Dispute opened. We'll review it shortly."
@@ -75,12 +87,13 @@ export function ReportDialog({
     setOpen(false);
     setReason("");
     setDetails("");
+    setFiles([]);
   }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger render={trigger} />
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{copy.title}</DialogTitle>
           <DialogDescription>{copy.description}</DialogDescription>
@@ -116,6 +129,11 @@ export function ReportDialog({
             rows={3}
             placeholder="Anything that helps us look into it"
           />
+        </div>
+
+        <div className="space-y-2">
+          <Label>Photos of the product (optional, up to 4)</Label>
+          <PhotoPicker files={files} onChange={setFiles} disabled={pending} />
         </div>
 
         {error && <p className="text-sm text-destructive">{error}</p>}

@@ -8,6 +8,7 @@ import MaxWidthWrapper from "@/components/MaxWidthWrapper";
 import { CheckoutButton } from "@/components/CheckoutButton";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { PaymentPanel } from "@/components/PaymentPanel";
 
 export default function CheckoutPage() {
   return (
@@ -117,7 +118,11 @@ async function CheckoutContent() {
         <span>R{total.toFixed(2)}</span>
       </div>
 
-      <CheckoutButton disabled={unavailable.length > 0} />
+      <PaymentPanel
+        total={total}
+        disabled={unavailable.length > 0}
+        demo={process.env.PAYMENTS_MODE === "demo"}
+      />
       <p className="text-center text-xs text-muted-foreground">
         You'll be taken to PayFast to pay securely.
       </p>

@@ -9,6 +9,8 @@ import { resolveDispute } from "@/app/actions/trust";
 import MaxWidthWrapper from "@/components/MaxWidthWrapper";
 import { StatusBadge } from "@/components/StatusBadge";
 import { ResolutionPanel } from "@/components/ResolutionPanel";
+import { signedPhotoUrls } from "@/lib/photos";
+import { PhotoGrid } from "@/components/PhotoGrid";
 
 export default function DisputePage({
   params,
@@ -47,6 +49,11 @@ async function DisputeContent({ params }: { params: Promise<{ id: string }> }) {
 
   const order = one<any>(dispute.order);
   const items: any[] = order?.items ?? [];
+  const photos = await signedPhotoUrls(
+    supabase,
+    "report-photos",
+    dispute.photos,
+  );
   const closed =
     dispute.status === "resolved" || dispute.status === "dismissed";
 
@@ -156,7 +163,12 @@ async function DisputeContent({ params }: { params: Promise<{ id: string }> }) {
           ))}
         </ul>
       </section>
-
+      {photos.length > 0 && (
+        <section className="space-y-2 rounded-xl border p-4">
+          <p className="text-sm font-medium">Photos from the reporter</p>
+          <PhotoGrid urls={photos} />
+        </section>
+      )}
       <ResolutionPanel
         actions={actions}
         closed={closed}

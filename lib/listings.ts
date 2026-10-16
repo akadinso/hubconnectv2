@@ -1,6 +1,8 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Listing } from "@/types/listing";
 
+
+
 export type GetListingsOptions = {
   limit?: number;
   sort?: "newest" | "rating";
@@ -61,7 +63,9 @@ export async function getListings(
   supabase: SupabaseClient,
   opts: GetListingsOptions = {},
 ): Promise<Listing[]> {
+  
   const { limit = 20, sort = "newest", search, type } = opts;
+
 
   let query = supabase
     .from("listings")
