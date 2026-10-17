@@ -11,7 +11,7 @@ export function SearchComponent() {
 
   return (
     <Form action="/marketplace" role="search" className="w-full">
-      <Field orientation="horizontal">
+      <Field orientation="horizontal" className="w-full">
         <Input
           key={q}
           type="search"
@@ -19,6 +19,7 @@ export function SearchComponent() {
           defaultValue={q}
           placeholder="Search listings..."
           aria-label="Search listings"
+          className="border-transparent bg-white text-navy placeholder:text-text-muted dark:bg-white dark:text-navy"
         />
       </Field>
     </Form>

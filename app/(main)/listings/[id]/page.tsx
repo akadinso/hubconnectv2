@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { ArrowLeft, BadgeCheck, MessageCircle, Star } from "lucide-react";
+import { ArrowLeft, BadgeCheck, Flag, MessageCircle, Star } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/server";
 import MaxWidthWrapper from "@/components/MaxWidthWrapper";
@@ -12,7 +12,10 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ListingActions } from "@/components/ListingActions";
 import { ReviewForm } from "@/components/ReviewForm";
+import { PhotoGrid } from "@/components/PhotoGrid";
 import { startConversation } from "./actions";
+import { ReportDialog } from "@/components/ReportDialog";
+import { publicPhotoUrls } from "@/lib/photos";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -65,7 +68,7 @@ async function ListingContent({ params }: { params: Promise<{ id: string }> }) {
     supabase
       .from("reviews")
       .select(
-        `id, rating, comment, created_at, reviewer_id,
+        `id, rating, comment, photos, created_at, reviewer_id,
          reviewer:profiles!reviewer_id ( username, full_name, avatar_url )`,
       )
       .eq("listing_id", id)
@@ -165,7 +168,16 @@ async function ListingContent({ params }: { params: Promise<{ id: string }> }) {
 
             <div className="min-w-0">
               <p className="flex items-center gap-1.5 font-medium">
-                <span className="truncate">{sellerName}</span>
+                {seller?.username ? (
+                  <Link
+                    href={`/profile/${seller.username}`}
+                    className="truncate underline-offset-4 hover:underline"
+                  >
+                    {sellerName}
+                  </Link>
+                ) : (
+                  <span className="truncate">{sellerName}</span>
+                )}
                 {seller?.verified && (
                   <BadgeCheck className="size-4 shrink-0 text-primary" />
                 )}
@@ -208,6 +220,28 @@ async function ListingContent({ params }: { params: Promise<{ id: string }> }) {
                   Message seller
                 </Button>
               </form>
+              <div className="flex gap-2">
+                <ReportDialog
+                  kind="listing"
+                  targetListingId={listing.id}
+                  trigger={
+                    <Button variant="ghost" size="sm" type="button">
+                      <Flag />
+                      Report listing
+                    </Button>
+                  }
+                />
+                <ReportDialog
+                  kind="user"
+                  targetUserId={listing.seller_id}
+                  trigger={
+                    <Button variant="ghost" size="sm" type="button">
+                      <Flag />
+                      Report seller
+                    </Button>
+                  }
+                />
+              </div>
             </div>
           )}
         </div>
@@ -225,6 +259,7 @@ async function ListingContent({ params }: { params: Promise<{ id: string }> }) {
             initialRating={myReview?.rating ?? 0}
             initialComment={myReview?.comment ?? ""}
             isEditing={!!myReview}
+            existingPhotoCount={myReview?.photos?.length ?? 0}
           />
         )}
 
@@ -276,6 +311,14 @@ async function ListingContent({ params }: { params: Promise<{ id: string }> }) {
                         {review.comment}
                       </p>
                     )}
+                    <PhotoGrid
+                      urls={publicPhotoUrls(
+                        supabase,
+                        "review-photos",
+                        review.photos,
+                      )}
+                      className="pt-1"
+                    />
                   </div>
                 </li>
               );

@@ -3,8 +3,7 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { startCheckout } from "@/app/checkout/actions";
-
+import { startCheckout } from "@/app/(main)/checkout/actions";
 export function CheckoutButton({ disabled }: { disabled?: boolean }) {
   const [loading, setLoading] = useState(false);
 

@@ -30,58 +30,75 @@ import {
   FileChartColumnIcon,
   FileIcon,
   CommandIcon,
+  Store,
 } from "lucide-react";
-import { CurrentUserAvatar } from "./current-user-avatar";
 import Link from "next/link";
+import { createClient } from "@/lib/supabase/client";
+import { UserDialog } from "./UserDialog";
 
 const data = {
   navMain: [
     {
       title: "Dashboard",
-      url: "#",
+      url: "/admin",
       icon: <LayoutDashboardIcon />,
     },
     {
       title: "User Management",
-      url: "#",
+      url: "/admin/users",
       icon: <ListIcon />,
     },
-    {
-      title: "Analytics",
-      url: "#",
-      icon: <ChartBarIcon />,
-    },
+
     {
       title: "Store Management",
-      url: "#",
-      icon: <FolderIcon />,
+      url: "/admin/store",
+      icon: <Store />,
     },
     {
-      title: "Team",
-      url: "#",
-      icon: <UsersIcon />,
+      title: "Report Management",
+      url: "/admin/reports",
+      icon: <FileTextIcon />,
     },
   ],
 
   navSecondary: [
     {
-      title: "Settings",
-      url: "#",
+      title: "Eduvos Docs",
+      url: "/docs",
       icon: <Settings2Icon />,
     },
     {
       title: "Get Help",
-      url: "#",
+      url: "/get-help",
       icon: <CircleHelpIcon />,
-    },
-    {
-      title: "Search",
-      url: "#",
-      icon: <SearchIcon />,
     },
   ],
 };
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+
+const supabase = await createClient();
+
+const {
+  data: { user },
+} = await supabase.auth.getUser();
+
+let fullName: string | null = null;
+let username: string | null = null;
+let avatarUrl: string | null = null;
+
+if (user) {
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role, full_name, username, avatar_url")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  fullName = profile?.full_name ?? null;
+  username = profile?.username ?? null;
+  avatarUrl = profile?.avatar_url ?? null;
+}
+export async function AppSidebar({
+  ...props
+}: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
@@ -100,8 +117,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavMain items={data.navMain} />
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
-      <SidebarFooter>
-        <CurrentUserAvatar />
+      <SidebarFooter className="flex flex-row items-center gap-4 border-t p-4">
+        <UserDialog fullName={fullName} avatarUrl={avatarUrl} role={null} />
+        <div>
+          <h1 className="text-sm">{fullName}</h1>
+          <p className="text-sm text-muted-foreground">{username}</p>
+        </div>
       </SidebarFooter>
     </Sidebar>
   );

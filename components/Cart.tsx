@@ -34,7 +34,7 @@ export function Cart() {
     >
       <DrawerTrigger
         render={
-          <Button variant="secondary">
+          <Button variant="default">
             <ShoppingCart />
             Cart
             {cartCount > 0 && <Badge className="ml-1">{cartCount}</Badge>}
@@ -51,7 +51,7 @@ export function Cart() {
               </Button>
             }
           />
-          <DrawerTitle className="text-xl font-bold">Cart</DrawerTitle>
+          <DrawerTitle className="text-xl font-bold ">Cart</DrawerTitle>
           <Badge className="text-md">{cartCount}</Badge>
         </DrawerHeader>
 

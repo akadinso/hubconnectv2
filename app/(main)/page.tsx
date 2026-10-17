@@ -8,6 +8,7 @@ import MaxWidthWrapper from "@/components/MaxWidthWrapper";
 import { Button } from "@/components/ui/button";
 import { CarouselComponent } from "@/components/CarouselComponent";
 import { ListingTabs } from "@/components/ListingTabs";
+import Image from "next/image";
 
 export default async function Home() {
   const supabase = await createClient();
@@ -39,7 +40,42 @@ export default async function Home() {
   ]);
 
   return (
-    <div className="flex min-h-screen flex-col gap-10 py-10">
+    <div className="flex min-h-screen flex-col gap-10">
+      <MaxWidthWrapper className="flex gap-6 bg-primary w-full h-full py-53">
+        <div className="flex flex-col gap-6 w-full">
+          <h1 className="text-xl font-normal tracking-tight text-gold uppercase">
+            Eduvos Incubator Hub Marketplace
+          </h1>
+          <p className="text-6xl text-white font-bold">
+            Shop student businesses <br />
+            <span className="text-gold">right here at campus.</span>
+          </p>
+          <p className="text-md text-white font-normal mt-3">
+            Handmade, homemade and second-hand – from Eduvos students, with
+            payment held safely until you get your item.
+          </p>
+          <div className="mt-4 flex flex-row gap-2">
+            <Button
+              variant="default"
+              className="p-6 bg-gold hover:bg-gold/90 text-primary"
+            >
+              <Link href="/marketplace">Start Shopping</Link>
+            </Button>
+            <Button variant="secondary" className="p-6">
+              <Link href="/marketplace">Sell Something</Link>
+            </Button>
+          </div>
+        </div>
+
+        <div>
+          <Image
+            src="/placeholder-image.jpg"
+            alt="Placeholder"
+            width={800}
+            height={400}
+          />
+        </div>
+      </MaxWidthWrapper>
       {/* Admin Quick Action Banner */}
       {isAdmin && (
         <MaxWidthWrapper className="w-full">
@@ -48,7 +84,7 @@ export default async function Home() {
               <ShieldCheck className="size-4 text-primary" />
               <span>Signed in as Administrator</span>
             </div>
-            <Button size="sm" variant="outline" >
+            <Button size="sm" variant="outline">
               <Link href="/admin">Open Admin Dashboard</Link>
             </Button>
           </div>

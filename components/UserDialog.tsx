@@ -20,6 +20,7 @@ import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
 
 type Role = "buyer" | "seller" | "admin";
 
@@ -196,6 +197,21 @@ export function UserDialog({
               </div>
             ))}
           </section>
+        </div>
+
+        <div className="flex flex-wrap gap-2">
+          {username && (
+            <Link href={`/profile/${username}`} onClick={() => setOpen(false)}>
+              <Button variant="outline" size="sm" type="button">
+                View profile
+              </Button>
+            </Link>
+          )}
+          <Link href="/settings/profile" onClick={() => setOpen(false)}>
+            <Button variant="outline" size="sm" type="button">
+              Edit profile
+            </Button>
+          </Link>
         </div>
 
         <Separator />

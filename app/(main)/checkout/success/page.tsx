@@ -68,7 +68,7 @@ async function Status({
 
       <p className="text-muted-foreground">
         {paid
-          ? `Thanks! R${Number(order.total).toFixed(2)} paid. The sellers have been notified.`
+          ? `Thanks! R${Number(order.total).toFixed(2)} paid. HubConnect holds it safely until you confirm you received your item.`
           : pending
             ? "This can take a few seconds. The page updates by itself."
             : "Your order wasn't paid. Your cart is still saved, so you can try again."}
@@ -76,8 +76,8 @@ async function Status({
 
       {pending && <AutoRefresh />}
 
-      <Link href={paid ? "/" : "/checkout"}>
-        <Button>{paid ? "Back to marketplace" : "Back to checkout"}</Button>
+      <Link href={paid ? "/orders" : "/checkout"}>
+        <Button>{paid ? "View my orders" : "Back to checkout"}</Button>
       </Link>
     </MaxWidthWrapper>
   );
