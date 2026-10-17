@@ -6,12 +6,12 @@ import { ArrowLeft } from "lucide-react";
 
 import { requireAdmin } from "@/lib/admin";
 import { formatDate, nameOf, one, rand } from "@/lib/format";
+import { signedPhotoUrls } from "@/lib/photos";
 import { resolveReport } from "@/app/actions/trust";
 import MaxWidthWrapper from "@/components/MaxWidthWrapper";
+import { PhotoGrid } from "@/components/PhotoGrid";
 import { StatusBadge } from "@/components/StatusBadge";
 import { ResolutionPanel } from "@/components/ResolutionPanel";
-import { signedPhotoUrls } from "@/lib/photos";
-import { PhotoGrid } from "@/components/PhotoGrid";
 
 export default function ReportPage({
   params,
@@ -21,7 +21,9 @@ export default function ReportPage({
   return (
     <Suspense
       fallback={
-        <MaxWidthWrapper className="w-full py-10">Report</MaxWidthWrapper>
+        <MaxWidthWrapper className="w-full py-10">
+          <h1>Loading...</h1>
+        </MaxWidthWrapper>
       }
     >
       <ReportContent params={params} />
@@ -36,13 +38,13 @@ async function ReportContent({ params }: { params: Promise<{ id: string }> }) {
   const { data: report } = await supabase
     .from("reports")
     .select(
-      `id, kind, reason, details, status, admin_note, created_at, target_listing_id,
-       reporter:profiles!reporter_id ( username, full_name ),
-       target:profiles!target_user_id ( username, full_name ),
-       listing:listings!target_listing_id (
-         id, title, price, image_url, status,
-         seller:profiles!seller_id ( username, full_name )
-       )`,
+      `id, kind, reason, details, photos, status, admin_note, created_at, target_listing_id,
+   reporter:profiles!reporter_id ( username, full_name ),
+   target:profiles!target_user_id ( username, full_name ),
+   listing:listings!target_listing_id (
+     id, title, price, image_url, status,
+     seller:profiles!seller_id ( username, full_name )
+   )`,
     )
     .eq("id", id)
     .maybeSingle();
@@ -54,7 +56,7 @@ async function ReportContent({ params }: { params: Promise<{ id: string }> }) {
   const photos = await signedPhotoUrls(
     supabase,
     "report-photos",
-    report.photos,
+    (report as any).photos as string[] | null,
   );
 
   const actions = [
@@ -81,11 +83,11 @@ async function ReportContent({ params }: { params: Promise<{ id: string }> }) {
   return (
     <MaxWidthWrapper className="w-full max-w-3xl space-y-6 py-8">
       <Link
-        href="/admin"
+        href="/admin/reports"
         className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
       >
         <ArrowLeft className="size-4" />
-        Admin dashboard
+        All reports
       </Link>
 
       <div className="flex flex-wrap items-center gap-3">
