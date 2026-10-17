@@ -54,8 +54,8 @@ async function ReportsContent({
   let query = supabase
     .from("reports")
     .select(
-      `id, kind, reason, status, created_at,
-       reporter:profiles!reporter_id ( username, full_name ),
+      `id, kind, reason, details, photos, status, admin_note, created_at, target_listing_id,
+ reporter:profiles!reporter_id ( username, full_name ),
        target:profiles!target_user_id ( username, full_name ),
        listing:listings!target_listing_id ( title )`,
     )
