@@ -19,7 +19,7 @@ export default function ReportPage({
   params: Promise<{ id: string }>;
 }) {
   return (
-    <Suspense fallback={<MaxWidthWrapper className="w-full py-10" />}>
+    <Suspense fallback={<MaxWidthWrapper className="w-full py-10" ><h1>Loading...</h1></MaxWidthWrapper>}>
       <ReportContent params={params} />
     </Suspense>
   );
