@@ -1,13 +1,12 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Listing } from "@/types/listing";
 
-
-
-export type GetListingsOptions = {
+type GetListingsOptions = {
   limit?: number;
   sort?: "newest" | "rating";
   search?: string;
   type?: "product" | "service";
+  sellerId?: string;
 };
 
 const SELECT = `
@@ -30,7 +29,7 @@ const SELECT = `
   )
 `;
 
-function toListing(row: any ): Listing {
+function toListing(row: any): Listing {
   const sellerJoined = row.seller?.created_at
     ? new Date(row.seller.created_at)
     : null;
@@ -63,29 +62,26 @@ export async function getListings(
   supabase: SupabaseClient,
   opts: GetListingsOptions = {},
 ): Promise<Listing[]> {
-  
-  const { limit = 20, sort = "newest", search, type } = opts;
-
+  const { limit = 20, sort = "newest", search, type, sellerId } = opts;
 
   let query = supabase
     .from("listings")
     .select(SELECT)
+    .eq("status", "active") // drafts and archived listings never show in lists
     .order(sort === "rating" ? "rating" : "created_at", {
       ascending: false,
       nullsFirst: false,
     });
 
-  if (search) {
-    query = query.or(`title.ilike.%${search}%,description.ilike.%${search}%`);
+  // Strip characters that would break the PostgREST filter string
+  const term = search?.replace(/[%,()*\\]/g, " ").trim().slice(0, 80);
+  if (term) {
+    query = query.or(`title.ilike.%${term}%,description.ilike.%${term}%`);
   }
 
-  if (type) {
-    query = query.eq("type", type);
-  }
-
-  if (limit) {
-    query = query.limit(limit);
-  }
+  if (type) query = query.eq("type", type);
+  if (sellerId) query = query.eq("seller_id", sellerId);
+  if (limit) query = query.limit(limit);
 
   const { data, error } = await query;
 

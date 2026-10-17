@@ -5,7 +5,6 @@ import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
 import MaxWidthWrapper from "@/components/MaxWidthWrapper";
-import { CheckoutButton } from "@/components/CheckoutButton";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { PaymentPanel } from "@/components/PaymentPanel";

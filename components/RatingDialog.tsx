@@ -17,9 +17,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { PhotoPicker } from "@/components/PhotoPicker";
 import { cn } from "@/lib/utils";
-import { submitReview } from "@/app/(main)/listings/[id]/actions";
 import { removePhotos, uploadPhotos } from "@/lib/upload-photos";
+import { submitReview } from "@/app/(main)/listings/[id]/actions";
+
 export function RatingDialog({
   listingId,
   listingTitle,
@@ -38,6 +40,7 @@ export function RatingDialog({
   const [rating, setRating] = React.useState(initialRating);
   const [hover, setHover] = React.useState(0);
   const [comment, setComment] = React.useState(initialComment);
+  const [files, setFiles] = React.useState<File[]>([]);
   const [error, setError] = React.useState<string | null>(null);
   const [pending, startTransition] = React.useTransition();
 
@@ -49,6 +52,7 @@ export function RatingDialog({
         setError(uploaded.error);
         return;
       }
+
       const result = await submitReview(
         listingId,
         rating,
@@ -60,6 +64,7 @@ export function RatingDialog({
         setError(result.error);
         return;
       }
+
       toast.success("Thanks for your review");
       setFiles([]);
       setOpen(false);
@@ -72,7 +77,7 @@ export function RatingDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger render={trigger} />
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Rate your experience</DialogTitle>
           <DialogDescription className="truncate">
@@ -113,6 +118,11 @@ export function RatingDialog({
             maxLength={1000}
             rows={3}
           />
+        </div>
+
+        <div className="space-y-2">
+          <Label>Photos of the product (optional)</Label>
+          <PhotoPicker files={files} onChange={setFiles} disabled={pending} />
         </div>
 
         {error && <p className="text-sm text-destructive">{error}</p>}

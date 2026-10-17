@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { requireAdmin } from "@/lib/admin";
 import { formatDate, nameOf, one } from "@/lib/format";
+import { FilterTabs } from "@/components/FilterTabs";
 import { StatusBadge } from "@/components/StatusBadge";
 import {
   Table,
@@ -12,14 +13,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { cn } from "@/lib/utils";
 
 const FILTERS = [
   { value: "open", label: "Open" },
   { value: "resolved", label: "Resolved" },
   { value: "dismissed", label: "Dismissed" },
   { value: "all", label: "All" },
-] as const;
+];
 
 export default function ReportsPage({
   searchParams,
@@ -54,7 +54,7 @@ async function ReportsContent({
   let query = supabase
     .from("reports")
     .select(
-      `id, kind, reason, status, created_at,
+      `id, kind, reason, photos, status, created_at,
        reporter:profiles!reporter_id ( username, full_name ),
        target:profiles!target_user_id ( username, full_name ),
        listing:listings!target_listing_id ( title )`,
@@ -78,26 +78,11 @@ async function ReportsContent({
         </p>
       </div>
 
-      <div className="flex flex-wrap gap-2">
-        {FILTERS.map((f) => (
-          <Link
-            key={f.value}
-            href={
-              f.value === "open"
-                ? "/admin/reports"
-                : `/admin/reports?status=${f.value}`
-            }
-            className={cn(
-              "rounded-full border px-4 py-1.5 text-sm transition-colors",
-              status === f.value
-                ? "border-foreground bg-foreground text-background"
-                : "hover:bg-muted",
-            )}
-          >
-            {f.label}
-          </Link>
-        ))}
-      </div>
+      <FilterTabs
+        basePath="/admin/reports"
+        current={status}
+        filters={FILTERS}
+      />
 
       {reports.length === 0 ? (
         <p className="py-12 text-center text-sm text-muted-foreground">
@@ -125,6 +110,7 @@ async function ReportsContent({
                     : r.kind === "user"
                       ? nameOf(one<any>(r.target), "Deleted user")
                       : "General problem";
+                const photoCount: number = r.photos?.length ?? 0;
 
                 return (
                   <TableRow key={r.id}>
@@ -132,8 +118,13 @@ async function ReportsContent({
                     <TableCell className="max-w-48 truncate font-medium">
                       {target}
                     </TableCell>
-                    <TableCell className="max-w-48 truncate">
-                      {r.reason}
+                    <TableCell className="max-w-48">
+                      <span className="block truncate">{r.reason}</span>
+                      {photoCount > 0 && (
+                        <span className="text-xs text-muted-foreground">
+                          {photoCount} photo{photoCount > 1 ? "s" : ""}
+                        </span>
+                      )}
                     </TableCell>
                     <TableCell>{nameOf(one<any>(r.reporter))}</TableCell>
                     <TableCell className="whitespace-nowrap">

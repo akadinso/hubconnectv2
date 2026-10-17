@@ -18,7 +18,11 @@ export default function DisputePage({
   params: Promise<{ id: string }>;
 }) {
   return (
-    <Suspense fallback={<MaxWidthWrapper className="w-full py-10" >Dispute</MaxWidthWrapper>}>
+    <Suspense
+      fallback={
+        <MaxWidthWrapper className="w-full py-10">Dispute</MaxWidthWrapper>
+      }
+    >
       <DisputeContent params={params} />
     </Suspense>
   );
@@ -31,8 +35,8 @@ async function DisputeContent({ params }: { params: Promise<{ id: string }> }) {
   const { data: dispute } = await supabase
     .from("disputes")
     .select(
-      `id, reason, details, status, admin_note, created_at, resolved_at, order_id,
-       opener:profiles!opened_by ( username, full_name ),
+      `id, reason, details, photos, status, admin_note, created_at, resolved_at, order_id,
+ opener:profiles!opened_by ( username, full_name ),
        order:orders!order_id (
          id, total, payment_status, payfast_payment_id, paid_at, created_at,
          buyer:profiles!buyer_id ( username, full_name ),
