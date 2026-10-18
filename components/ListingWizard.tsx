@@ -23,7 +23,7 @@ import {
   rateSuffix,
 } from "@/lib/marketplace-options";
 import { cn } from "@/lib/utils";
-import type { SellerListing } from "@/types/seller-listing";
+import type { SellerListing } from "@/types/seller-listings";
 
 const BUCKET = "listing-images";
 const EXT: Record<string, string> = {

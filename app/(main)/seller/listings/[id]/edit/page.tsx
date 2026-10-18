@@ -6,7 +6,7 @@ import { ArrowLeft } from "lucide-react";
 import { requireSeller } from "@/lib/seller";
 import MaxWidthWrapper from "@/components/MaxWidthWrapper";
 import { ListingWizard } from "@/components/ListingWizard";
-import type { SellerListing } from "@/types/seller-listing";
+import type { SellerListing } from "@/types/seller-listings";
 
 export default function EditListingPage({
   params,

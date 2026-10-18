@@ -9,7 +9,7 @@ import { OrderItemActions } from "@/components/OrderItemActions";
 import { PayoutForm } from "@/components/PayoutForm";
 import { SellerListings } from "@/components/SellerListings";
 import { StatusBadge } from "@/components/StatusBadge";
-import type { SellerListing } from "@/types/seller-listing";
+import type { SellerListing } from "@/types/seller-listings";
 import { Card, CardContent } from "@/components/ui/card";
 
 export default function SellerPage() {

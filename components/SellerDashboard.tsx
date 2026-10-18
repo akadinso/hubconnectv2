@@ -15,7 +15,11 @@ export type Listing = {
   created_at?: string;
 };
 
-export function SellerDashboard({ initialListings }: { initialListings: Listing[] }) {
+export function SellerDashboard({
+  initialListings,
+}: {
+  initialListings: Listing[];
+}) {
   const supabase = createClient();
   const [listings, setListings] = useState<Listing[]>(initialListings);
   const [showForm, setShowForm] = useState(false);
