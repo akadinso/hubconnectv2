@@ -7,15 +7,15 @@ import { createClient } from '@/lib/supabase/server'
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
   const token_hash = searchParams.get('token_hash')
-  const type = searchParams.get('type') as EmailOtpType | null
+  const type = (searchParams.get('type') ?? 'email') as EmailOtpType
   const code = searchParams.get('code')
   const _next = searchParams.get('next')
-  // Only allow same-site paths (blocks "//evil.com" style redirects)
+  // Only same-site paths (blocks "//evil.com" style redirects)
   const next = _next?.startsWith('/') && !_next.startsWith('//') ? _next : '/'
 
   const supabase = await createClient()
 
-  if (token_hash && type) {
+  if (token_hash) {
     const { error } = await supabase.auth.verifyOtp({ type, token_hash })
     if (!error) redirect(next)
     redirect(`/auth/error?error=${encodeURIComponent(error.message)}`)
@@ -27,5 +27,7 @@ export async function GET(request: NextRequest) {
     redirect(`/auth/error?error=${encodeURIComponent(error.message)}`)
   }
 
-  redirect(`/auth/error?error=${encodeURIComponent('Missing confirmation token')}`)
+  // No token in the query string. The link may carry it in the #fragment,
+  // which only the browser can read, so hand over to a client page.
+  redirect(`/auth/finish?next=${encodeURIComponent(next)}`)
 }

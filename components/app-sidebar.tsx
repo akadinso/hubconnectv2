@@ -31,6 +31,8 @@ import {
   FileIcon,
   CommandIcon,
   Store,
+  FileExclamationPointIcon,
+  ShoppingBasket,
 } from "lucide-react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
@@ -58,6 +60,16 @@ const data = {
       title: "Report Management",
       url: "/admin/reports",
       icon: <FileTextIcon />,
+    },
+    {
+      title: "Disputes Management",
+      url: "/admin/disputes",
+      icon: <FileExclamationPointIcon />,
+    },
+    {
+      title: "Seller Applications",
+      url: "/admin/seller-applications",
+      icon: <ShoppingBasket />,
     },
   ],
 

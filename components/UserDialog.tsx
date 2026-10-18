@@ -136,7 +136,6 @@ export function UserDialog({
         </AlertDialogHeader>
 
         <div className="flex flex-col gap-5">
-          {/* Profile info */}
           <section className="flex items-center gap-4">
             <Avatar className="size-16 shrink-0">
               {avatarUrl && <AvatarImage src={avatarUrl} alt={displayName} />}
@@ -175,7 +174,6 @@ export function UserDialog({
 
           <Separator />
 
-          {/* Notifications */}
           <section className="flex flex-col gap-3">
             <h3 className="text-sm font-medium">Notifications</h3>
             {NOTIFICATION_OPTIONS.map(({ key, label, description }) => (
@@ -204,6 +202,13 @@ export function UserDialog({
             <Link href={`/profile/${username}`} onClick={() => setOpen(false)}>
               <Button variant="outline" size="sm" type="button">
                 View profile
+              </Button>
+            </Link>
+          )}
+          {role === "buyer" && (
+            <Link href="/seller/onboarding" onClick={() => setOpen(false)}>
+              <Button size="sm" type="button">
+                Become a seller
               </Button>
             </Link>
           )}
