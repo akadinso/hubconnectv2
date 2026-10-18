@@ -363,36 +363,6 @@ export function OnboardingForm({
             </p>
           </div>
 
-          {/* Avatar Upload Placeholder */}
-          <div className="flex flex-col items-center gap-2">
-            <div className="relative">
-              <Avatar className="size-20 border-2 border-slate-100">
-                {avatarPreview && (
-                  <AvatarImage src={avatarPreview} alt="Preview" />
-                )}
-                <AvatarFallback className="text-lg font-bold bg-amber-100 text-amber-800">
-                  {initials || "?"}
-                </AvatarFallback>
-              </Avatar>
-              <label
-                htmlFor="avatar-upload"
-                className="absolute bottom-0 right-0 flex size-6 cursor-pointer items-center justify-center rounded-full bg-slate-900 text-white shadow-xs hover:bg-slate-800"
-              >
-                <Camera className="size-3.5" />
-              </label>
-              <input
-                id="avatar-upload"
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handleAvatarChange}
-              />
-            </div>
-            <span className="text-[11px] text-slate-400">
-              Upload a profile photo
-            </span>
-          </div>
-
           {/* Inputs */}
           <div className="space-y-1.5">
             <Label
@@ -445,7 +415,7 @@ export function OnboardingForm({
             </Label>
             <Input
               id="bio"
-              placeholder="Tell buyers a bit about yourself..."
+              placeholder="Tell people a bit about yourself..."
               className="h-10 text-xs"
             />
           </div>
