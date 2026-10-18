@@ -35,9 +35,6 @@ export function OnboardingForm({
     .map((part) => part[0]?.toUpperCase())
     .join("");
 
-  // Validate username against PostgreSQL constraint: ^[a-z0-9_]{3,20}$const isUsernameValid = /^[a-z0-9_]{3,20}$/.test(username);
-  const canContinue = fullName.trim().length >= 2 && isUsernameValid;
-
   function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
