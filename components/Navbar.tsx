@@ -1,13 +1,13 @@
 import Link from "next/link";
-import { Button } from "./ui/button";
+import Image from "next/image";
+import { createClient } from "@/lib/supabase/server";
 import MaxWidthWrapper from "./MaxWidthWrapper";
+import { Button } from "./ui/button";
 import { Cart } from "./Cart";
 import { SearchComponent } from "./SearchComponent";
-import { createClient } from "@/lib/supabase/server";
 import { UserDialog } from "./UserDialog";
 import { Favourites } from "./Favourite";
 import { MobileMenu } from "./MobileMenu";
-import { MessageCircle } from "lucide-react";
 
 type Role = "buyer" | "seller" | "admin";
 
@@ -41,7 +41,9 @@ export const Navbar = async () => {
       ? { href: "/seller", label: "Seller Dashboard" }
       : role === "admin"
         ? { href: "/admin", label: "Admin" }
-        : null;
+        : role === "buyer"
+          ? { href: "/seller/onboarding", label: "Become a Seller" }
+          : null;
 
   const userDialog = user ? (
     <UserDialog
@@ -62,7 +64,13 @@ export const Navbar = async () => {
             href="/"
             className="flex flex-row items-center gap-2 text-lg font-semibold tracking-tight text-white"
           >
-            HubConnect
+            <Image
+              src="/logo.png"
+              alt="HubConnect Logo"
+              width={400}
+              height={300}
+              priority
+            />
           </Link>
 
           <div className="md:hidden">
@@ -86,38 +94,32 @@ export const Navbar = async () => {
             <Cart />
           </div>
 
-          <Link href="/orders">
-            <Button
-              variant="ghost"
-              className="text-white hover:bg-white/10 hover:text-white"
-            >
-              Orders
-            </Button>
-          </Link>
+          <Button
+            variant="ghost"
+            className="text-white hover:bg-white/10 hover:text-white"
+          >
+            <Link href="/orders">Orders</Link>
+          </Button>
 
           {roleLink && (
-            <Link href={roleLink.href}>
-              <Button
-                variant="outline"
-                className="border-white/30 bg-transparent text-white hover:bg-white/10 hover:text-white"
-              >
-                {roleLink.label}
-              </Button>
-            </Link>
+            <Button
+              variant="outline"
+              className="border-white/30 bg-transparent text-white hover:bg-white/10 hover:text-white"
+            >
+              <Link href={roleLink.href}>{roleLink.label}</Link>
+            </Button>
           )}
 
           {user ? (
             userDialog
           ) : (
             <div className="flex flex-row items-center gap-4">
-              <Link href="/auth/login">
-                <Button variant="secondary">Sign In</Button>
-              </Link>
-              <Link href="/auth/sign-up">
-                <Button className="bg-gold text-navy hover:bg-gold/90">
-                  Register
-                </Button>
-              </Link>
+              <Button variant="secondary">
+                <Link href="/auth/login">Sign In</Link>
+              </Button>
+              <Button className="bg-gold text-navy hover:bg-gold/90">
+                <Link href="/auth/sign-up">Register</Link>
+              </Button>
             </div>
           )}
         </nav>
