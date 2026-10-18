@@ -5,15 +5,15 @@ import { Sparkles, ShieldCheck } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getListings } from "@/lib/listings";
 import MaxWidthWrapper from "@/components/MaxWidthWrapper";
+import { Hero } from "@/components/Hero";
 import { Button } from "@/components/ui/button";
 import { CarouselComponent } from "@/components/CarouselComponent";
 import { ListingTabs } from "@/components/ListingTabs";
-import Image from "next/image";
 
 export default async function Home() {
   const supabase = await createClient();
 
-  // 1. Authenticate User
+  // 1. Authenticate user
   const {
     data: { user },
     error: userError,
@@ -21,7 +21,7 @@ export default async function Home() {
 
   if (userError || !user) redirect("/auth/login");
 
-  // 2. Fetch User Profile & Onboarding Status
+  // 2. Profile and onboarding status
   const { data: profile } = await supabase
     .from("profiles")
     .select("role, onboarded")
@@ -30,9 +30,13 @@ export default async function Home() {
 
   if (!profile?.onboarded) redirect("/onboarding");
 
-  const isAdmin = profile?.role === "admin";
+  const isAdmin = profile.role === "admin";
+  const canSell = profile.role === "seller" || isAdmin;
 
-  // 3. Parallel Listing Queries
+  // Sellers go straight to the new listing form; everyone else applies first
+  const sellHref = canSell ? "/seller/listings/new" : "/seller/onboarding";
+
+  // 3. Listings
   const [recommended, allListings, newArrivals] = await Promise.all([
     getListings(supabase, { limit: 12, sort: "rating" }),
     getListings(supabase, { limit: 20 }),
@@ -40,43 +44,10 @@ export default async function Home() {
   ]);
 
   return (
-    <div className="flex min-h-screen flex-col gap-10">
-      <MaxWidthWrapper className="flex gap-6 bg-primary w-full h-full py-53">
-        <div className="flex flex-col gap-6 w-full">
-          <h1 className="text-xl font-normal tracking-tight text-gold uppercase">
-            Eduvos Incubator Hub Marketplace
-          </h1>
-          <p className="text-6xl text-white font-bold">
-            Shop student businesses <br />
-            <span className="text-gold">right here at campus.</span>
-          </p>
-          <p className="text-md text-white font-normal mt-3">
-            Handmade, homemade and second-hand – from Eduvos students, with
-            payment held safely until you get your item.
-          </p>
-          <div className="mt-4 flex flex-row gap-2">
-            <Button
-              variant="default"
-              className="p-6 bg-gold hover:bg-gold/90 text-primary"
-            >
-              <Link href="/marketplace">Start Shopping</Link>
-            </Button>
-            <Button variant="secondary" className="p-6">
-              <Link href="/marketplace">Sell Something</Link>
-            </Button>
-          </div>
-        </div>
+    <div className="flex flex-col gap-10 pb-12">
+      <Hero sellHref={sellHref} />
 
-        <div>
-          <Image
-            src="/placeholder-image.jpg"
-            alt="Placeholder"
-            width={800}
-            height={400}
-          />
-        </div>
-      </MaxWidthWrapper>
-      {/* Admin Quick Action Banner */}
+      {/* Admin quick action banner */}
       {isAdmin && (
         <MaxWidthWrapper className="w-full">
           <div className="flex items-center justify-between rounded-xl border bg-muted/40 p-4">
@@ -84,30 +55,34 @@ export default async function Home() {
               <ShieldCheck className="size-4 text-primary" />
               <span>Signed in as Administrator</span>
             </div>
-            <Button size="sm" variant="outline">
-              <Link href="/admin">Open Admin Dashboard</Link>
-            </Button>
+            <Link href="/admin">
+              <Button size="sm" variant="outline">
+                Open Admin Dashboard
+              </Button>
+            </Link>
           </div>
         </MaxWidthWrapper>
       )}
 
-      {/* Recommended Section */}
+      {/* Recommended */}
       <MaxWidthWrapper className="w-full space-y-4">
         <div className="flex items-center justify-between">
-          <h1 className="flex items-center gap-2.5 text-2xl font-bold tracking-tight">
-            <Sparkles className="size-5 text-amber-500 fill-amber-500/20" />
+          <h2 className="flex items-center gap-2.5 text-2xl font-bold tracking-tight">
+            <Sparkles className="size-5 fill-amber-500/20 text-amber-500" />
             Recommended for you
-          </h1>
+          </h2>
 
-          <Button variant="outline" size="sm">
-            <Link href="/marketplace">View More</Link>
-          </Button>
+          <Link href="/marketplace">
+            <Button variant="outline" size="sm">
+              View More
+            </Button>
+          </Link>
         </div>
 
         <CarouselComponent variant="compact" listings={recommended} />
       </MaxWidthWrapper>
 
-      {/* Main Listings Tabs */}
+      {/* All listings and new arrivals */}
       <MaxWidthWrapper className="w-full">
         <ListingTabs
           tabs={[

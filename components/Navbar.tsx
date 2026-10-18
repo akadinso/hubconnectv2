@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 import { UserDialog } from "./UserDialog";
 import { Favourites } from "./Favourite";
 import { MobileMenu } from "./MobileMenu";
+import { MessageCircle } from "lucide-react";
 
 type Role = "buyer" | "seller" | "admin";
 

@@ -9,8 +9,8 @@ import { OrderItemActions } from "@/components/OrderItemActions";
 import { PayoutForm } from "@/components/PayoutForm";
 import { SellerListings } from "@/components/SellerListings";
 import { StatusBadge } from "@/components/StatusBadge";
+import type { SellerListing } from "@/types/seller-listing";
 import { Card, CardContent } from "@/components/ui/card";
-import type { SellerListing } from "@/components/ProductUploadForm";
 
 export default function SellerPage() {
   return (
@@ -66,7 +66,7 @@ async function SellerContent() {
     supabase
       .from("listings")
       .select(
-        "id, title, description, price, image_url, type, category_id, status",
+        "id, title, description, price, image_url, images, type, category_id, condition, rate_type, availability, status",
       )
       .eq("seller_id", user.id)
       .order("created_at", { ascending: false }),

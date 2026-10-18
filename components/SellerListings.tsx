@@ -2,24 +2,15 @@
 
 import * as React from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Pencil, Plus } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { StatusBadge } from "@/components/StatusBadge";
 import { createClient } from "@/lib/supabase/client";
-import {
-  ProductUploadForm,
-  type SellerListing,
-} from "@/components/ProductUploadForm";
+import type { SellerListing } from "@/types/seller-listings";
 
 const BADGE: Record<string, string> = {
   active: "resolved",
@@ -29,18 +20,6 @@ const BADGE: Record<string, string> = {
 
 export function SellerListings({ listings }: { listings: SellerListing[] }) {
   const router = useRouter();
-  const [open, setOpen] = React.useState(false);
-  const [editing, setEditing] = React.useState<SellerListing | null>(null);
-
-  function openNew() {
-    setEditing(null);
-    setOpen(true);
-  }
-
-  function openEdit(listing: SellerListing) {
-    setEditing(listing);
-    setOpen(true);
-  }
 
   async function archive(listing: SellerListing) {
     if (
@@ -67,10 +46,12 @@ export function SellerListings({ listings }: { listings: SellerListing[] }) {
     <section className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="font-semibold">My listings</h2>
-        <Button size="sm" onClick={openNew}>
-          <Plus />
-          New listing
-        </Button>
+        <Link href="/seller/listings/new">
+          <Button size="sm">
+            <Plus />
+            New listing
+          </Button>
+        </Link>
       </div>
 
       {listings.length === 0 ? (
@@ -105,10 +86,12 @@ export function SellerListings({ listings }: { listings: SellerListing[] }) {
 
               <StatusBadge status={BADGE[l.status]} />
 
-              <Button size="sm" variant="outline" onClick={() => openEdit(l)}>
-                <Pencil />
-                Edit
-              </Button>
+              <Link href={`/seller/listings/${l.id}/edit`}>
+                <Button size="sm" variant="outline">
+                  <Pencil />
+                  Edit
+                </Button>
+              </Link>
               {l.status !== "archived" && (
                 <Button size="sm" variant="ghost" onClick={() => archive(l)}>
                   Archive
@@ -118,32 +101,6 @@ export function SellerListings({ listings }: { listings: SellerListing[] }) {
           ))}
         </ul>
       )}
-
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle>
-              {editing ? "Edit listing" : "New listing"}
-            </DialogTitle>
-            <DialogDescription>
-              {editing
-                ? "Update the details buyers see."
-                : "Add something to sell on HubConnect."}
-            </DialogDescription>
-          </DialogHeader>
-
-          <ProductUploadForm
-            key={editing?.id ?? "new"}
-            initialListing={editing}
-            onClose={() => setOpen(false)}
-            onSaved={() => {
-              setOpen(false);
-              toast.success(editing ? "Listing updated" : "Listing saved");
-              router.refresh();
-            }}
-          />
-        </DialogContent>
-      </Dialog>
     </section>
   );
 }

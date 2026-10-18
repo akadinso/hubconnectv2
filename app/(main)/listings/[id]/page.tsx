@@ -1,39 +1,30 @@
 import { Suspense } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { ArrowLeft, BadgeCheck, Flag, MessageCircle, Star } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/server";
+import { initialsOf, one } from "@/lib/format";
+import { publicPhotoUrls } from "@/lib/photos";
+import {
+  DAYS,
+  conditionLabel,
+  rateSuffix,
+  studentStatus,
+} from "@/lib/marketplace-options";
 import MaxWidthWrapper from "@/components/MaxWidthWrapper";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ListingActions } from "@/components/ListingActions";
+import { ListingGallery } from "@/components/ListingGallery";
 import { ReviewForm } from "@/components/ReviewForm";
 import { PhotoGrid } from "@/components/PhotoGrid";
-import { startConversation } from "./actions";
 import { ReportDialog } from "@/components/ReportDialog";
-import { publicPhotoUrls } from "@/lib/photos";
+import { startConversation } from "./actions";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
-// Joined rows can come back as an object or a one-item array depending on typings
-function one<T>(value: T | T[] | null | undefined): T | null {
-  return Array.isArray(value) ? (value[0] ?? null) : (value ?? null);
-}
-
-function initialsOf(name: string) {
-  return (
-    name
-      .split(" ")
-      .filter(Boolean)
-      .slice(0, 2)
-      .map((p) => p[0]?.toUpperCase())
-      .join("") || "?"
-  );
-}
 
 export default function ListingPage({ params }: PageProps<"/listings/[id]">) {
   return (
@@ -48,7 +39,6 @@ async function ListingContent({ params }: { params: Promise<{ id: string }> }) {
   if (!UUID.test(id)) notFound();
 
   const supabase = await createClient();
-
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -58,9 +48,9 @@ async function ListingContent({ params }: { params: Promise<{ id: string }> }) {
     supabase
       .from("listings")
       .select(
-        `id, title, description, image_url, price, type, rating, review_count,
-         created_at, seller_id,
-         seller:profiles!seller_id ( id, username, full_name, avatar_url, verified, bio, created_at ),
+        `id, title, description, image_url, images, price, type, condition, rate_type,
+         availability, rating, review_count, created_at, seller_id,
+         seller:profiles!seller_id ( id, username, full_name, shop_name, avatar_url, verified, expected_graduation ),
          category:categories!category_id ( name )`,
       )
       .eq("id", id)
@@ -77,6 +67,14 @@ async function ListingContent({ params }: { params: Promise<{ id: string }> }) {
 
   if (!listing) notFound();
 
+  const { data: statsData } = await supabase.rpc("seller_public_stats", {
+    sid: listing.seller_id,
+  });
+  const stats: any = Array.isArray(statsData) ? statsData[0] : statsData;
+  const sold = Number(stats?.items_sold ?? 0);
+  const sellerRating = stats?.rating != null ? Number(stats.rating) : null;
+  const sellerReviews = Number(stats?.review_count ?? 0);
+
   const seller = one<any>(listing.seller);
   const category = one<any>(listing.category);
   const reviews = (reviewRows ?? []) as any[];
@@ -84,120 +82,127 @@ async function ListingContent({ params }: { params: Promise<{ id: string }> }) {
   const isOwner = listing.seller_id === user.id;
   const myReview = reviews.find((r) => r.reviewer_id === user.id) ?? null;
 
-  const sellerName = seller?.full_name || seller?.username || "Seller";
-  const sellerIsNew =
-    !!seller?.created_at &&
-    Date.now() - new Date(seller.created_at).getTime() <
-      30 * 24 * 60 * 60 * 1000;
+  const sellerName =
+    seller?.shop_name || seller?.full_name || seller?.username || "Seller";
+  const student = studentStatus(seller?.expected_graduation);
+
+  const images: string[] = listing.images?.length
+    ? listing.images
+    : listing.image_url
+      ? [listing.image_url]
+      : [];
 
   const price = listing.price != null ? Number(listing.price) : null;
+  const isService = listing.type === "service";
+  const days = DAYS.filter((d) =>
+    (listing.availability ?? []).includes(d.value),
+  );
 
   return (
     <MaxWidthWrapper className="w-full space-y-10 py-8">
       <Link
-        href="/"
-        className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+        href="/marketplace"
+        className="inline-flex items-center gap-2 text-sm font-medium"
       >
         <ArrowLeft className="size-4" />
-        Back to listings
+        Back to Marketplace
       </Link>
 
       <div className="grid gap-8 md:grid-cols-2">
-        {/* Image */}
-        <div className="relative aspect-square overflow-hidden rounded-2xl bg-muted">
-          {listing.image_url && (
-            <Image
-              src={listing.image_url}
-              alt={listing.title}
-              fill
-              priority
-              sizes="(min-width: 768px) 50vw, 100vw"
-              className="object-cover"
-            />
-          )}
-        </div>
+        <ListingGallery images={images} alt={listing.title} />
 
-        {/* Details */}
         <div className="flex flex-col gap-5">
           <div className="flex flex-wrap items-center gap-2">
-            <Badge variant="secondary" className="capitalize">
+            <Badge
+              variant="secondary"
+              className="bg-gold-lite capitalize text-gold-dark"
+            >
               {listing.type}
             </Badge>
             {category?.name && <Badge variant="outline">{category.name}</Badge>}
-          </div>
-
-          <h1 className="text-3xl font-bold tracking-tight">{listing.title}</h1>
-
-          <div className="flex items-center gap-2 text-sm">
-            <Star className="size-4 fill-yellow-400 text-yellow-400" />
-            {listing.rating != null ? (
-              <span>
-                <span className="font-medium">
-                  {Number(listing.rating).toFixed(1)}
-                </span>{" "}
-                <span className="text-muted-foreground">
-                  ({listing.review_count}{" "}
-                  {listing.review_count === 1 ? "review" : "reviews"})
-                </span>
-              </span>
-            ) : (
-              <span className="text-muted-foreground">No reviews yet</span>
+            {!isService && conditionLabel(listing.condition) && (
+              <Badge variant="outline">
+                {conditionLabel(listing.condition)}
+              </Badge>
             )}
           </div>
 
-          <p className="text-3xl font-semibold">
+          <h1 className="text-2xl font-bold tracking-tight">{listing.title}</h1>
+
+          <p className="text-3xl font-bold text-primary">
             {price != null ? `R${price.toFixed(2)}` : "Price on request"}
+            {isService && listing.rate_type && (
+              <span className="ml-2 text-base font-normal text-muted-foreground">
+                {rateSuffix(listing.rate_type)}
+              </span>
+            )}
           </p>
 
           {listing.description && (
-            <p className="leading-relaxed text-muted-foreground">
+            <p className="text-sm leading-relaxed text-muted-foreground">
               {listing.description}
             </p>
+          )}
+
+          {isService && days.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-sm font-medium">Available</p>
+              <div className="flex flex-wrap gap-2">
+                {days.map((d) => (
+                  <Badge key={d.value} variant="secondary">
+                    {d.label}
+                  </Badge>
+                ))}
+              </div>
+            </div>
           )}
 
           <Separator />
 
           {/* Seller */}
-          <div className="flex items-center gap-3">
-            <Avatar className="size-12">
+          <div className="flex flex-wrap items-center gap-4">
+            <Avatar className="size-14">
               {seller?.avatar_url && (
                 <AvatarImage src={seller.avatar_url} alt={sellerName} />
               )}
               <AvatarFallback>{initialsOf(sellerName)}</AvatarFallback>
             </Avatar>
 
-            <div className="min-w-0">
-              <p className="flex items-center gap-1.5 font-medium">
-                {seller?.username ? (
-                  <Link
-                    href={`/profile/${seller.username}`}
-                    className="truncate underline-offset-4 hover:underline"
-                  >
-                    {sellerName}
-                  </Link>
-                ) : (
-                  <span className="truncate">{sellerName}</span>
-                )}
-                {seller?.verified && (
-                  <BadgeCheck className="size-4 shrink-0 text-primary" />
-                )}
-                {sellerIsNew && (
-                  <Badge variant="secondary" className="text-[10px]">
-                    New Seller
-                  </Badge>
-                )}
-              </p>
-              {seller?.username && (
-                <p className="text-xs text-muted-foreground">
-                  @{seller.username}
-                </p>
+            <div className="min-w-0 flex-1 space-y-1">
+              {seller?.username ? (
+                <Link
+                  href={`/profile/${seller.username}`}
+                  className="block truncate text-sm font-semibold underline-offset-4 hover:underline"
+                >
+                  {sellerName}
+                </Link>
+              ) : (
+                <p className="truncate text-sm font-semibold">{sellerName}</p>
               )}
+              <div className="flex flex-wrap items-center gap-2">
+                {seller?.verified && (
+                  <span className="flex items-center gap-1 text-sm font-medium text-muted-foreground">
+                    <BadgeCheck className="size-4 text-primary" />
+                    Verified seller
+                  </span>
+                )}
+                <Badge className="bg-gold-lite text-[10px] text-gold-dark hover:bg-gold-lite">
+                  {student.label === "Alumni" ? "Alumni" : "Active student"}
+                </Badge>
+              </div>
+            </div>
+
+            <div className="text-center">
+              <div className="rounded-full bg-muted px-4 py-1.5 text-sm font-semibold">
+                {sellerRating != null
+                  ? `${sellerRating.toFixed(1)} (${sellerReviews})`
+                  : "No reviews"}
+              </div>
+              <p className="mt-1 text-[11px] text-muted-foreground">
+                {sold} sold
+              </p>
             </div>
           </div>
-
-          {seller?.bio && (
-            <p className="text-sm text-muted-foreground">{seller.bio}</p>
-          )}
 
           {/* Actions */}
           {isOwner ? (
@@ -211,15 +216,18 @@ async function ListingContent({ params }: { params: Promise<{ id: string }> }) {
                   id: listing.id,
                   title: listing.title,
                   price,
-                  image: listing.image_url ?? null,
+                  image: images[0] ?? null,
                 }}
               />
               <form action={startConversation.bind(null, listing.id)}>
                 <Button variant="outline" className="w-full" type="submit">
                   <MessageCircle />
-                  Message seller
+                  Message Seller
                 </Button>
               </form>
+              <p className="text-xs text-muted-foreground">
+                Want a different price? Message the seller to make an offer.
+              </p>
               <div className="flex gap-2">
                 <ReportDialog
                   kind="listing"
@@ -251,7 +259,15 @@ async function ListingContent({ params }: { params: Promise<{ id: string }> }) {
 
       {/* Reviews */}
       <section className="space-y-6">
-        <h2 className="text-xl font-semibold">Reviews ({reviews.length})</h2>
+        <h2 className="flex items-center gap-2 text-xl font-semibold">
+          Reviews ({reviews.length})
+          {listing.rating != null && (
+            <span className="flex items-center gap-1 text-sm font-normal text-muted-foreground">
+              <Star className="size-4 fill-yellow-400 text-yellow-400" />
+              {Number(listing.rating).toFixed(1)}
+            </span>
+          )}
+        </h2>
 
         {!isOwner && (
           <ReviewForm
@@ -302,6 +318,7 @@ async function ListingContent({ params }: { params: Promise<{ id: string }> }) {
                             day: "numeric",
                             month: "short",
                             year: "numeric",
+                            timeZone: "Africa/Johannesburg",
                           },
                         )}
                       </span>
@@ -338,7 +355,6 @@ function ListingSkeleton() {
         <div className="space-y-4">
           <div className="h-6 w-24 animate-pulse rounded bg-muted" />
           <div className="h-9 w-3/4 animate-pulse rounded bg-muted" />
-          <div className="h-5 w-40 animate-pulse rounded bg-muted" />
           <div className="h-9 w-32 animate-pulse rounded bg-muted" />
           <div className="h-24 w-full animate-pulse rounded bg-muted" />
         </div>
