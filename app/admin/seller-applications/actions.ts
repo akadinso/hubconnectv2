@@ -29,7 +29,7 @@ export async function reviewApplication(
 
   const { data: app } = await supabase
     .from("seller_applications")
-    .select("id, status, user_id, business_name")
+    .select("id, status, user_id")
     .eq("id", id)
     .maybeSingle();
 
@@ -39,7 +39,7 @@ export async function reviewApplication(
   if (decision === "approved") {
     const { error } = await supabase
       .from("profiles")
-      .update({ role: "seller", shop_name: app.business_name })
+      .update({ role: "seller" })
       .eq("id", app.user_id);
     if (error) return { error: error.message };
   }
