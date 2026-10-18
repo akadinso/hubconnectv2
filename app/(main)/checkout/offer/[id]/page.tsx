@@ -7,10 +7,10 @@ import { ArrowLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { one, rand } from "@/lib/format";
 import MaxWidthWrapper from "@/components/MaxWidthWrapper";
-import { CheckoutShell } from "@/components/CheckoutShell";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { startOfferCheckout } from "../actions";
+import { CheckoutShell } from "@/components/ChekoutShell";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
