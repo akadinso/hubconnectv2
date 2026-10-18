@@ -344,32 +344,76 @@ export function OnboardingForm({
       )}
 
       {step === 2 && (
-        <CardContent className="space-y-4 rounded-2xl bg-white p-6 border border-slate-100 shadow-xs">
-          <CardHeader className="p-0 pb-2 space-y-1">
-            <CardTitle className="text-lg font-bold">
-              Seller Profile Setup
+        <CardContent className="space-y-5 rounded-2xl bg-white p-6 border border-slate-100 shadow-xs max-w-sm mx-auto">
+          {/* Logo Header */}
+          <div className="flex flex-col items-center gap-2 text-center pb-2">
+            <Image
+              src="/logo.png"
+              alt="HubConnect Logo"
+              width={140}
+              height={45}
+              priority
+            />
+            <CardTitle className="text-lg font-bold text-slate-900 mt-2">
+              Set up your profile
             </CardTitle>
             <p className="text-xs text-slate-500">
-              Tell buyers who you are so they can identify you during campus
-              meetups.
+              This is how other students will see you
             </p>
-          </CardHeader>
+          </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="full-name" className="text-xs font-semibold">
-              Full name
+          {/* Avatar Upload Placeholder */}
+          <div className="flex flex-col items-center gap-2">
+            <div className="relative">
+              <Avatar className="size-20 border-2 border-slate-100">
+                {avatarPreview && (
+                  <AvatarImage src={avatarPreview} alt="Preview" />
+                )}
+                <AvatarFallback className="text-lg font-bold bg-amber-100 text-amber-800">
+                  {initials || "?"}
+                </AvatarFallback>
+              </Avatar>
+              <label
+                htmlFor="avatar-upload"
+                className="absolute bottom-0 right-0 flex size-6 cursor-pointer items-center justify-center rounded-full bg-slate-900 text-white shadow-xs hover:bg-slate-800"
+              >
+                <Camera className="size-3.5" />
+              </label>
+              <input
+                id="avatar-upload"
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleAvatarChange}
+              />
+            </div>
+            <span className="text-[11px] text-slate-400">
+              Upload a profile photo
+            </span>
+          </div>
+
+          {/* Inputs */}
+          <div className="space-y-1.5">
+            <Label
+              htmlFor="full-name"
+              className="text-xs font-semibold text-slate-900"
+            >
+              Full Name
             </Label>
             <Input
               id="full-name"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
-              placeholder="John Doe"
+              placeholder="Thabo Mokoena"
               className="h-10 text-xs"
             />
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="username" className="text-xs font-semibold">
+            <Label
+              htmlFor="username"
+              className="text-xs font-semibold text-slate-900"
+            >
               Username
             </Label>
             <Input
@@ -381,41 +425,49 @@ export function OnboardingForm({
                   .replace(/[^a-z0-9_]/g, "");
                 setUsername(sanitized);
               }}
-              placeholder="johndoe_99"
+              placeholder="thabo_m"
               maxLength={20}
               className="h-10 text-xs"
             />
             <p className="text-[10px] text-slate-400">
               3–20 characters. Lowercase letters, numbers, and underscores only.
             </p>
-            {username.length > 0 && username.length < 3 && (
-              <p className="text-[10px] text-destructive">
-                Username must be at least 3 characters long.
-              </p>
-            )}
+          </div>
+
+          <div className="space-y-1.5">
+            <Label
+              htmlFor="bio"
+              className="text-xs font-semibold text-slate-900"
+            >
+              Short Bio{" "}
+              <span className="text-slate-400 font-normal">(optional)</span>
+            </Label>
+            <Input
+              id="bio"
+              placeholder="Tell buyers a bit about yourself..."
+              className="h-10 text-xs"
+            />
+          </div>
+
+          {/* New Seller Badge Tag */}
+          <div className="flex justify-center pt-1">
+            <div className="flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 text-[11px] font-medium text-slate-600">
+              <span>✨</span> New Seller
+            </div>
           </div>
 
           {error && (
             <p className="text-xs text-destructive text-center">{error}</p>
           )}
 
-          <div className="flex gap-2 pt-2">
-            <Button
-              variant="outline"
-              className="flex-1 text-xs"
-              onClick={() => setStep(1)}
-              disabled={loading}
-            >
-              Back
-            </Button>
-            <Button
-              className="flex-1 text-xs bg-[#11223f] text-white hover:bg-[#11223f]/90"
-              disabled={!canContinue || loading}
-              onClick={handleSaveDetails}
-            >
-              {loading ? "Saving..." : "Continue"}
-            </Button>
-          </div>
+          {/* Action Button */}
+          <Button
+            className="w-full rounded-xl bg-[#11223f] h-10 text-xs font-medium text-white hover:bg-[#11223f]/90 mt-2"
+            disabled={!canContinue || loading}
+            onClick={handleSaveDetails}
+          >
+            {loading ? "Saving..." : "Save & Continue"}
+          </Button>
         </CardContent>
       )}
 
