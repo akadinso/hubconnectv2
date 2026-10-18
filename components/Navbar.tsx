@@ -2,7 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
 import MaxWidthWrapper from "./MaxWidthWrapper";
-import { Button } from "./ui/button";
+import { buttonVariants } from "./ui/button";
 import { Cart } from "./Cart";
 import { SearchComponent } from "./SearchComponent";
 import { UserDialog } from "./UserDialog";
@@ -55,25 +55,25 @@ export const Navbar = async () => {
   ) : null;
 
   return (
-    // Full-width navy bar; the content inside stays within the max width
-    <header className="w-full bg-navy text-white">
-      <MaxWidthWrapper className="flex h-20 w-full flex-row items-center justify-between gap-2 px-4">
-        {/* Logo + Mobile Menu */}
-        <div className="flex h-full w-full flex-row items-center justify-between gap-2 md:w-auto">
+    <header className="sticky top-0 z-50 w-full bg-[#11223f] text-white shadow-sm">
+      <MaxWidthWrapper className="flex h-16 w-full items-center justify-between gap-4 px-4 sm:h-20">
+        {/* Logo & Mobile Menu */}
+        <div className="flex h-full w-full items-center justify-between gap-2 md:w-auto md:justify-start">
           <Link
             href="/"
-            className="flex flex-row items-center gap-2 text-lg font-semibold tracking-tight text-white"
+            className="flex items-center gap-2 font-semibold tracking-tight text-white shrink-0"
           >
             <Image
               src="/logo.png"
               alt="HubConnect Logo"
-              width={500}
-              height={300}
+              width={160}
+              height={48}
               priority
+              className="h-auto w-32 object-contain sm:w-40"
             />
           </Link>
 
-          <div className="md:hidden">
+          <div className="shrink-0 md:hidden">
             <MobileMenu
               isUser={!!user}
               roleLink={roleLink}
@@ -82,44 +82,68 @@ export const Navbar = async () => {
           </div>
         </div>
 
-        {/* Search */}
-        <div className="mx-5 hidden w-full md:mx-40 md:block">
+        {/* Search Input */}
+        <div className="mx-2 hidden w-full max-w-md shrink md:block lg:mx-8 lg:max-w-xl">
           <SearchComponent />
         </div>
 
-        {/* Desktop Navigation */}
-        <nav className="hidden items-center gap-8 md:flex">
-          <div className="flex flex-row items-center gap-3">
+        {/* Navigation Items */}
+        <nav className="hidden shrink-0 items-center gap-4 md:flex lg:gap-6">
+          <div className="flex items-center gap-2 lg:gap-3">
             <Favourites />
             <Cart />
           </div>
 
-          <Button
-            variant="ghost"
-            className="text-white hover:bg-white/10 hover:text-white"
+          <Link
+            href="/orders"
+            className={buttonVariants({
+              variant: "ghost",
+              size: "sm",
+              className:
+                "text-xs font-medium text-white hover:bg-white/10 hover:text-white",
+            })}
           >
-            <Link href="/orders">Orders</Link>
-          </Button>
+            Orders
+          </Link>
 
           {roleLink && (
-            <Button
-              variant="outline"
-              className="border-white/30 bg-transparent text-white hover:bg-white/10 hover:text-white"
+            <Link
+              href={roleLink.href}
+              className={buttonVariants({
+                variant: "outline",
+                size: "sm",
+                className:
+                  "border-white/30 bg-transparent text-xs font-medium text-white hover:bg-white/10 hover:text-white",
+              })}
             >
-              <Link href={roleLink.href}>{roleLink.label}</Link>
-            </Button>
+              {roleLink.label}
+            </Link>
           )}
 
           {user ? (
             userDialog
           ) : (
-            <div className="flex flex-row items-center gap-4">
-              <Button variant="secondary">
-                <Link href="/auth/login">Sign In</Link>
-              </Button>
-              <Button className="bg-gold text-navy hover:bg-gold/90">
-                <Link href="/auth/sign-up">Register</Link>
-              </Button>
+            <div className="flex items-center gap-2">
+              <Link
+                href="/auth/login"
+                className={buttonVariants({
+                  variant: "secondary",
+                  size: "sm",
+                  className: "text-xs",
+                })}
+              >
+                Sign In
+              </Link>
+              <Link
+                href="/auth/sign-up"
+                className={buttonVariants({
+                  size: "sm",
+                  className:
+                    "bg-amber-400 text-xs text-[#11223f] hover:bg-amber-300 font-semibold",
+                })}
+              >
+                Register
+              </Link>
             </div>
           )}
         </nav>
