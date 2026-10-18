@@ -1,62 +1,114 @@
 "use client";
 
 import Image from "next/image";
-import type { Listing } from "@/components/SellerDashboard";
+import type { SellerListing } from "@/types/seller-listings";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 interface Props {
-  data: Listing[];
-  onEdit: (listing: Listing) => void;
+  data: SellerListing[];
+  onEdit: (listing: SellerListing) => void;
   onDelete: (id: string) => void;
 }
 
 export function SellerListingsTable({ data, onEdit, onDelete }: Props) {
+  const getStatusVariant = (status: SellerListing["status"]) => {
+    switch (status) {
+      case "active":
+        return "default";
+      case "draft":
+        return "secondary";
+      case "archived":
+        return "outline";
+      default:
+        return "secondary";
+    }
+  };
+
   return (
-    <table className="w-full border-collapse border">
-      <thead>
-        <tr className="bg-gray-100">
-          <th className="border p-2">Image</th>
-          <th className="border p-2">Title</th>
-          <th className="border p-2">Price</th>
-          <th className="border p-2">Status</th>
-          <th className="border p-2">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {data.map((listing) => (
-          <tr key={listing.id} className="hover:bg-gray-50">
-            <td className="border p-2">
-              {listing.image_url ? (
-                <Image
-                  src={listing.image_url}
-                  alt={listing.title}
-                  width={80}
-                  height={80}
-                  className="rounded object-cover"
-                />
-              ) : (
-                <span className="text-gray-400">No image</span>
-              )}
-            </td>
-            <td className="border p-2">{listing.title}</td>
-            <td className="border p-2">R{listing.price}</td>
-            <td className="border p-2">{listing.status}</td>
-            <td className="flex gap-2 border p-2">
-              <button
-                onClick={() => onEdit(listing)}
-                className="rounded bg-blue-600 px-3 py-1 text-white hover:bg-blue-700"
-              >
-                Edit
-              </button>
-              <button
-                onClick={() => onDelete(listing.id)}
-                className="rounded bg-red-600 px-3 py-1 text-white hover:bg-red-700"
-              >
-                Delete
-              </button>
-            </td>
+    <div className="w-full overflow-x-auto rounded-lg border">
+      <table className="w-full text-left text-sm border-collapse">
+        <thead>
+          <tr className="border-b bg-muted/50 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            <th className="p-3">Image</th>
+            <th className="p-3">Title</th>
+            <th className="p-3">Type</th>
+            <th className="p-3">Price</th>
+            <th className="p-3">Status</th>
+            <th className="p-3 text-right">Actions</th>
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody className="divide-y">
+          {data.map((listing) => {
+            const formattedPrice =
+              typeof listing.price === "number"
+                ? new Intl.NumberFormat("en-ZA", {
+                    style: "currency",
+                    currency: "ZAR",
+                    maximumFractionDigits: 0,
+                  }).format(listing.price)
+                : "—";
+
+            return (
+              <tr
+                key={listing.id}
+                className="hover:bg-muted/30 transition-colors"
+              >
+                <td className="p-3">
+                  <div className="relative size-12 overflow-hidden rounded-md bg-muted">
+                    {listing.image_url ? (
+                      <Image
+                        src={listing.image_url}
+                        alt={listing.title}
+                        fill
+                        sizes="48px"
+                        className="object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center text-[10px] text-muted-foreground">
+                        No image
+                      </div>
+                    )}
+                  </div>
+                </td>
+                <td className="p-3 font-medium text-foreground max-w-[200px] truncate">
+                  {listing.title}
+                </td>
+                <td className="p-3 capitalize text-muted-foreground">
+                  {listing.type}
+                </td>
+                <td className="p-3 font-mono font-medium">{formattedPrice}</td>
+                <td className="p-3">
+                  <Badge
+                    variant={getStatusVariant(listing.status)}
+                    className="capitalize"
+                  >
+                    {listing.status}
+                  </Badge>
+                </td>
+                <td className="p-3 text-right">
+                  <div className="flex justify-end gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => onEdit(listing)}
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => onDelete(listing.id)}
+                    >
+                      Delete
+                    </Button>
+                  </div>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
   );
 }
