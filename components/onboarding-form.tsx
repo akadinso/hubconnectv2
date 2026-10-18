@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Clock, Camera, MapPin, Truck, Hand } from "lucide-react";
+import Image from "next/image";
 
 const MAX_AVATAR_SIZE = 2 * 1024 * 1024; // 2MB
 
