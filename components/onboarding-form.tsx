@@ -28,6 +28,9 @@ export function OnboardingForm({
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  const isUsernameValid = /^[a-z0-9_]{3,20}$/.test(username);
+  const canContinue = fullName.trim().length >= 2 && isUsernameValid;
+
   const initials = fullName
     .split(" ")
     .filter(Boolean)
@@ -51,6 +54,68 @@ export function OnboardingForm({
     setError(null);
     setAvatarFile(file);
     setAvatarPreview(URL.createObjectURL(file));
+  }
+
+  async function handleStartSelling() {
+    setLoading(true);
+    setError(null);
+
+    const supabase = createClient();
+
+    const { error: profileError } = await supabase.from("profiles").upsert(
+      {
+        id: userId,
+        full_name: fullName.trim() || defaultName,
+        role: "buyer",
+        onboarded: true,
+        updated_at: new Date().toISOString(),
+      },
+      {
+        onConflict: "id",
+      },
+    );
+
+    if (profileError) {
+      console.error("Profile update error:", profileError.message);
+    }
+
+    router.push("/seller/onboarding");
+    router.refresh();
+  }
+
+  async function handleSaveDetails() {
+    if (!canContinue) return;
+    setLoading(true);
+    setError(null);
+
+    const supabase = createClient();
+
+    const { error: profileError } = await supabase.from("profiles").upsert(
+      {
+        id: userId,
+        full_name: fullName.trim(),
+        username: username.trim(),
+        role: "buyer",
+        onboarded: true,
+        updated_at: new Date().toISOString(),
+      },
+      {
+        onConflict: "id",
+      },
+    );
+
+    setLoading(false);
+
+    if (profileError) {
+      setError(
+        profileError.code === "23505"
+          ? "That username is already taken."
+          : profileError.message,
+      );
+      return;
+    }
+
+    setStep(3);
   }
 
   async function handleFinish() {
@@ -163,24 +228,22 @@ export function OnboardingForm({
   ];
 
   return (
-    <Card className="mx-auto w-full max-w-xl border-none bg-slate-50/50 p-4 shadow-none sm:p-6">
+    <Card className="mx-auto max-w-full border-none bg-slate-50/50 p-4 shadow-none sm:p-6">
       {step === 1 && (
         <CardContent className="space-y-6 p-0">
-          {/* Header Banner */}
           <div className="text-center space-y-1.5">
             <div className="flex justify-center text-amber-500 pb-1">
               <Hand className="size-8 rotate-[15deg] fill-amber-400 text-amber-500" />
             </div>
-            <CardTitle className="text-2xl font-bold tracking-tight text-slate-900">
+            <CardTitle className="text-3xl font-bold tracking-tight text-slate-900">
               Welcome to selling on HubConnect
             </CardTitle>
-            <p className="text-xs text-slate-500 max-w-md mx-auto">
+            <p className="text-md text-slate-500 max-w-md mx-auto">
               Before your first listing goes live, here&apos;s what helps buyers
               trust you from the start
             </p>
           </div>
 
-          {/* Core Guidelines List */}
           <div className="space-y-3">
             {sellerTips.map((tip, idx) => {
               const Icon = tip.icon;
@@ -193,7 +256,7 @@ export function OnboardingForm({
                     <Icon className="size-5" />
                   </div>
                   <div className="space-y-0.5">
-                    <h4 className="text-xs font-bold text-slate-900">
+                    <h4 className="text-md font-bold text-slate-900">
                       {tip.title}
                     </h4>
                     <p className="text-[11px] leading-normal text-slate-500">
@@ -205,35 +268,34 @@ export function OnboardingForm({
             })}
           </div>
 
-          {/* What you get as a seller Grid */}
           <div className="space-y-2.5">
-            <h3 className="text-xs font-bold text-slate-900">
+            <h3 className="text-md font-bold text-slate-900">
               What you get as a seller
             </h3>
             <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-3">
               <div className="rounded-xl bg-white p-3 border border-slate-100 shadow-xs space-y-1">
-                <h4 className="text-[11px] font-bold text-slate-900">
+                <h4 className="text-md font-bold text-slate-900">
                   Free while we launch
                 </h4>
-                <p className="text-[10px] leading-normal text-slate-500">
+                <p className="text-xs leading-normal text-slate-500">
                   No listing fees during the trial. Any future fees will be
                   announced well in advance.
                 </p>
               </div>
               <div className="rounded-xl bg-white p-3 border border-slate-100 shadow-xs space-y-1">
-                <h4 className="text-[11px] font-bold text-slate-900">
+                <h4 className="text-md font-bold text-slate-900">
                   Clear posting rules
                 </h4>
-                <p className="text-[10px] leading-normal text-slate-500">
+                <p className="text-xs leading-normal text-slate-500">
                   Post and edit listings any time. Listing limit: [to confirm
                   with the team].
                 </p>
               </div>
               <div className="rounded-xl bg-white p-3 border border-slate-100 shadow-xs space-y-1">
-                <h4 className="text-[11px] font-bold text-slate-900">
+                <h4 className="text-md font-bold text-slate-900">
                   Seen across campus
                 </h4>
-                <p className="text-[10px] leading-normal text-slate-500">
+                <p className="text-xs leading-normal text-slate-500">
                   Featured in our launch campaign, on posters and at on-campus
                   pop-ups – we bring the buyers.
                 </p>
@@ -241,21 +303,20 @@ export function OnboardingForm({
             </div>
           </div>
 
-          {/* How you get paid Box */}
           <div className="rounded-2xl border border-amber-200/80 bg-amber-50/20 p-4 space-y-3">
-            <h4 className="text-xs font-bold text-slate-900">
+            <h4 className="text-md font-bold text-slate-900">
               How you get paid
             </h4>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
               {paymentSteps.map((item) => (
                 <div key={item.step} className="space-y-1">
-                  <div className="flex size-5 items-center justify-center rounded-full bg-slate-900 text-[10px] font-bold text-white">
+                  <div className="flex size-5 items-center justify-center rounded-full bg-slate-900 text-md font-bold text-white">
                     {item.step}
                   </div>
-                  <h5 className="text-[10px] font-bold text-slate-900 leading-tight">
+                  <h5 className="text-md font-bold text-slate-900 leading-tight">
                     {item.title}
                   </h5>
-                  <p className="text-[9px] leading-tight text-slate-500">
+                  <p className="text-xs leading-tight text-slate-500">
                     {item.description}
                   </p>
                 </div>
@@ -263,17 +324,17 @@ export function OnboardingForm({
             </div>
           </div>
 
-          {/* Action Buttons */}
           <div className="space-y-2 pt-1">
             <Button
-              className="w-full bg-[#11223f] py-6 text-xs font-medium text-white hover:bg-[#11223f]/90 rounded-xl"
-              onClick={() => setStep(2)}
+              className="w-full rounded-xl bg-[#11223f] py-6 text-xs font-medium text-white hover:bg-[#11223f]/90"
+              onClick={handleStartSelling}
+              disabled={loading}
             >
-              Got It - create my first listing
+              {loading ? "Redirecting..." : "Got It - create my first listing"}
             </Button>
             <button
               type="button"
-              className="w-full text-center text-xs font-medium text-slate-400 hover:text-slate-600 py-1"
+              className="w-full py-1 text-center text-xs font-medium text-slate-400 hover:text-slate-600"
               onClick={() => setStep(2)}
             >
               Skip for now
@@ -334,20 +395,25 @@ export function OnboardingForm({
             )}
           </div>
 
+          {error && (
+            <p className="text-xs text-destructive text-center">{error}</p>
+          )}
+
           <div className="flex gap-2 pt-2">
             <Button
               variant="outline"
               className="flex-1 text-xs"
               onClick={() => setStep(1)}
+              disabled={loading}
             >
               Back
             </Button>
             <Button
               className="flex-1 text-xs bg-[#11223f] text-white hover:bg-[#11223f]/90"
-              disabled={!canContinue}
-              onClick={() => setStep(3)}
+              disabled={!canContinue || loading}
+              onClick={handleSaveDetails}
             >
-              Continue
+              {loading ? "Saving..." : "Continue"}
             </Button>
           </div>
         </CardContent>

@@ -5,28 +5,41 @@ import { OnboardingForm } from "@/components/onboarding-form";
 export default async function OnboardingPage() {
   const supabase = await createClient();
 
+  // 1. Authenticate user
   const {
     data: { user },
+    error: userError,
   } = await supabase.auth.getUser();
 
-  if (!user) redirect("/auth/login");
+  if (userError || !user) {
+    redirect("/auth/login");
+  }
 
+  // 2. Fetch profile onboarding and role status
   const { data: profile } = await supabase
     .from("profiles")
-    .select("onboarded")
+    .select("full_name, onboarded, role")
     .eq("id", user.id)
     .maybeSingle();
 
-  if (profile?.onboarded) redirect("/");
+  // 3. If already onboarded, redirect user based on role or to home page
+  if (profile?.onboarded) {
+    if (profile.role === "seller" || profile.role === "admin") {
+      redirect("/seller");
+    }
+    redirect("/");
+  }
+
+  // Fallback to email metadata or user email prefix if profile full_name is empty
+  const defaultName =
+    profile?.full_name ||
+    user.user_metadata?.full_name ||
+    user.email?.split("@")[0] ||
+    "";
 
   return (
-    <div className="flex min-h-svh items-center justify-center p-6">
-      <div className="w-full max-w-md">
-        <OnboardingForm
-          userId={user.id}
-          defaultName={user.user_metadata?.full_name ?? ""}
-        />
-      </div>
-    </div>
+    <main className="flex min-h-screen flex-col items-center justify-center bg-slate-50/50 p-4 sm:p-6">
+      <OnboardingForm userId={user.id} defaultName={defaultName} />
+    </main>
   );
 }
