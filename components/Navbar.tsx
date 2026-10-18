@@ -57,7 +57,7 @@ export const Navbar = async () => {
   return (
     // Full-width navy bar; the content inside stays within the max width
     <header className="w-full bg-navy text-white">
-      <MaxWidthWrapper className="flex h-16 w-full flex-row items-center justify-between gap-2 px-4">
+      <MaxWidthWrapper className="flex h-20 w-full flex-row items-center justify-between gap-2 px-4">
         {/* Logo + Mobile Menu */}
         <div className="flex h-full w-full flex-row items-center justify-between gap-2 md:w-auto">
           <Link
@@ -67,7 +67,7 @@ export const Navbar = async () => {
             <Image
               src="/logo.png"
               alt="HubConnect Logo"
-              width={400}
+              width={500}
               height={300}
               priority
             />
