@@ -74,16 +74,16 @@ export function SignUpForm({
         {/* Logo Banner */}
         <div className="flex flex-col items-center gap-2 text-center">
           <Image
-            src="/logo.png"
+            src="/logo-dark.png"
             alt="HubConnect Logo"
             width={160}
             height={50}
             priority
           />
-          <h2 className="text-2xl font-bold tracking-tight text-slate-900 mt-4">
+          <h2 className="text-3xl font-bold tracking-tight text-slate-900 mt-4">
             Create your account
           </h2>
-          <p className="text-xs text-slate-500">
+          <p className="text-md text-slate-500">
             Login with your Eduvos student account
           </p>
         </div>
@@ -96,7 +96,7 @@ export function SignUpForm({
           <div className="space-y-1.5">
             <Label
               htmlFor="email"
-              className="text-xs font-semibold text-slate-900"
+              className="text-md font-semibold text-slate-900"
             >
               Eduvos Email
             </Label>
@@ -117,7 +117,7 @@ export function SignUpForm({
           <div className="space-y-1.5">
             <Label
               htmlFor="password"
-              className="text-xs font-semibold text-slate-900"
+              className="text-md font-semibold text-slate-900"
             >
               Password
             </Label>
@@ -134,7 +134,7 @@ export function SignUpForm({
           <div className="space-y-1.5">
             <Label
               htmlFor="repeat-password"
-              className="text-xs font-semibold text-slate-900"
+              className="text-md font-semibold text-slate-900"
             >
               Confirm Password
             </Label>
@@ -154,7 +154,7 @@ export function SignUpForm({
 
           <Button
             type="submit"
-            className="w-full rounded-xl bg-[#11223f] h-10 text-xs font-medium text-white hover:bg-[#11223f]/90"
+            className="w-full rounded-xl bg-[#11223f] h-10 text-md font-medium text-white hover:bg-[#11223f]/90"
             disabled={isLoading}
           >
             {isLoading ? "Creating Account..." : "Create Account"}

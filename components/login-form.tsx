@@ -81,7 +81,7 @@ export function LoginForm({
                 Grow on campus.
               </span>
             </h1>
-            <p className="text-sm text-slate-300 italic pt-2">
+            <p className="text-md text-slate-300 italic pt-2">
               &quot;I sold my first bracelets to classmates within a week.&quot;
             </p>
             <p className="text-xs text-slate-400 font-medium">
@@ -104,13 +104,13 @@ export function LoginForm({
           {/* Logo Header */}
           <div className="flex flex-col items-center gap-2 text-center">
             <Image
-              src="/logo.png"
+              src="/logo-dark.png"
               alt="HubConnect Logo"
               width={160}
               height={50}
               priority
             />
-            <h2 className="text-2xl font-bold tracking-tight text-slate-900 mt-4">
+            <h2 className="text-3xl font-bold tracking-tight text-slate-900 mt-4">
               Welcome back
             </h2>
             <p className="text-xs text-slate-500">
@@ -126,7 +126,7 @@ export function LoginForm({
             <div className="space-y-1.5">
               <Label
                 htmlFor="email"
-                className="text-xs font-semibold text-slate-900"
+                className="text-md font-semibold text-slate-900"
               >
                 Eduvos Email
               </Label>
@@ -145,7 +145,7 @@ export function LoginForm({
               <div className="flex items-center justify-between">
                 <Label
                   htmlFor="password"
-                  className="text-xs font-semibold text-slate-900"
+                  className="text-md font-semibold text-slate-900"
                 >
                   Password
                 </Label>
@@ -179,7 +179,7 @@ export function LoginForm({
 
             <Button
               type="submit"
-              className="w-full rounded-xl bg-[#11223f] h-10 text-xs font-medium text-white hover:bg-[#11223f]/90"
+              className="w-full rounded-xl bg-[#11223f] h-10 text-md font-medium text-white hover:bg-[#11223f]/90"
               disabled={isLoading}
             >
               {isLoading ? "Logging in..." : "Login"}
