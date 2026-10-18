@@ -7,30 +7,22 @@ import MaxWidthWrapper from "@/components/MaxWidthWrapper";
 import { EscrowSteps } from "@/components/EscrowSteps";
 import { OrderItemActions } from "@/components/OrderItemActions";
 import { PayoutForm } from "@/components/PayoutForm";
+import { SellerListings } from "@/components/SellerListings";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Card, CardContent } from "@/components/ui/card";
-import { AppSidebar } from "@/components/app-sidebar";
-import { SiteHeader } from "@/components/site-header"; // fixed typo: sit-header
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { SellerDashboard } from "@/components/SellerDashboard";
+import type { SellerListing } from "@/components/ProductUploadForm";
 
 export default function SellerPage() {
   return (
-    <SidebarProvider>
-      <AppSidebar variant="floating" />
-      <SidebarInset>
-        <SiteHeader />
-        <Suspense
-          fallback={
-            <MaxWidthWrapper className="w-full py-10">
-              <div className="h-8 w-48 animate-pulse rounded bg-muted" />
-            </MaxWidthWrapper>
-          }
-        >
-          <SellerContent />
-        </Suspense>
-      </SidebarInset>
-    </SidebarProvider>
+    <Suspense
+      fallback={
+        <MaxWidthWrapper className="w-full py-10">
+          <div className="h-8 w-48 animate-pulse rounded bg-muted" />
+        </MaxWidthWrapper>
+      }
+    >
+      <SellerContent />
+    </Suspense>
   );
 }
 
@@ -73,30 +65,38 @@ async function SellerContent() {
       .limit(50),
     supabase
       .from("listings")
-      .select("id, title, description, price, status, image_url, created_at")
+      .select(
+        "id, title, description, price, image_url, type, category_id, status",
+      )
       .eq("seller_id", user.id)
       .order("created_at", { ascending: false }),
   ]);
 
-  const w: any = Array.isArray(walletRes.data) ? walletRes.data[0] : walletRes.data;
+  const w: any = Array.isArray(walletRes.data)
+    ? walletRes.data[0]
+    : walletRes.data;
   const held = Number(w?.held ?? 0);
   const available = Number(w?.available ?? 0);
   const paidOut = Number(w?.paid_out ?? 0);
 
   const payouts = (payoutsRes.data ?? []) as any[];
   const sales = (salesRes.data ?? []) as any[];
-  const listings = (listingsRes.data ?? []) as any[];
+  const listings = (listingsRes.data ?? []) as SellerListing[];
 
   return (
     <MaxWidthWrapper className="w-full max-w-4xl space-y-8 py-8">
       <h1 className="text-2xl font-bold">Seller dashboard</h1>
 
-      {/* ── Wallet ─────────────────────────────────────── */}
+      {/* Wallet */}
       <section className="space-y-4">
         <h2 className="font-semibold">My wallet</h2>
         <div className="grid gap-4 sm:grid-cols-3">
           {[
-            { label: "In escrow", value: held, hint: "Waiting for buyers to confirm" },
+            {
+              label: "In escrow",
+              value: held,
+              hint: "Waiting for buyers to confirm",
+            },
             { label: "Available", value: available, hint: "Ready to pay out" },
             { label: "Paid out", value: paidOut, hint: "Sent to your bank" },
           ].map((s) => (
@@ -137,13 +137,10 @@ async function SellerContent() {
         )}
       </section>
 
-      {/* ── Listings + upload (client) ──────────────────── */}
-      <section className="space-y-4">
-        <h2 className="font-semibold">My listings</h2>
-        <SellerDashboard initialListings={listings} />
-      </section>
+      {/* Listings: the component draws its own heading and "New listing" button */}
+      <SellerListings listings={listings} />
 
-      {/* ── Orders to fulfil ───────────────────────────── */}
+      {/* Orders to fulfil */}
       <section className="space-y-4">
         <h2 className="font-semibold">Orders to fulfil</h2>
         {sales.length === 0 ? (
@@ -158,8 +155,9 @@ async function SellerContent() {
                     <div className="min-w-0">
                       <p className="truncate font-medium">{item.title}</p>
                       <p className="text-xs text-muted-foreground">
-                        Buyer: {nameOf(one<any>(order?.buyer))} · {item.quantity} ×{" "}
-                        {rand(item.unit_price)} · {formatDate(order?.created_at)}
+                        Buyer: {nameOf(one<any>(order?.buyer))} ·{" "}
+                        {item.quantity} × {rand(item.unit_price)} ·{" "}
+                        {formatDate(order?.created_at)}
                       </p>
                     </div>
                     <p className="shrink-0 font-medium">
