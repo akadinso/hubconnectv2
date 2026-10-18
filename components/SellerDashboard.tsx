@@ -4,33 +4,36 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { ProductUploadForm } from "@/components/ProductUploadForm";
 import { SellerListingsTable } from "@/components/SellerListingsTable";
-
-export type Listing = {
-  id: string;
-  title: string;
-  description: string;
-  price: number;
-  status: string;
-  image_url: string | null;
-  created_at?: string;
-};
+import type { SellerListing } from "@/types/seller-listings";
 
 export function SellerDashboard({
   initialListings,
 }: {
-  initialListings: Listing[];
+  initialListings: SellerListing[];
 }) {
   const supabase = createClient();
-  const [listings, setListings] = useState<Listing[]>(initialListings);
+  const [listings, setListings] = useState<SellerListing[]>(initialListings);
   const [showForm, setShowForm] = useState(false);
-  const [editingListing, setEditingListing] = useState<Listing | null>(null);
+  const [editingListing, setEditingListing] = useState<SellerListing | null>(
+    null,
+  );
 
   const refresh = async () => {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("listings")
-      .select("id, title, description, price, status, image_url, created_at")
+      .select(
+        "id, title, description, price, image_url, images, type, category_id, condition, rate_type, availability, status, created_at",
+      )
       .order("created_at", { ascending: false });
-    if (data) setListings(data as Listing[]);
+
+    if (error) {
+      console.error("Error refreshing listings:", error.message);
+      return;
+    }
+
+    if (data) {
+      setListings(data as SellerListing[]);
+    }
   };
 
   const handleDelete = async (id: string) => {
@@ -42,7 +45,7 @@ export function SellerDashboard({
     setListings((prev) => prev.filter((l) => l.id !== id));
   };
 
-  const handleEdit = (listing: Listing) => {
+  const handleEdit = (listing: SellerListing) => {
     setEditingListing(listing);
     setShowForm(true);
   };
@@ -61,7 +64,7 @@ export function SellerDashboard({
             setEditingListing(null);
             setShowForm(true);
           }}
-          className="rounded bg-amber-200 px-4 py-2 font-medium text-gray-800 shadow hover:bg-amber-300"
+          className="rounded bg-amber-200 px-4 py-2 font-medium text-gray-800 shadow transition-colors hover:bg-amber-300"
         >
           + Sell Something
         </button>
