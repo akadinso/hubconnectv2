@@ -38,7 +38,7 @@ export default async function OnboardingPage() {
     "";
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-slate-50/50 p-4 sm:p-6">
+    <main className="flex min-h-screen w-full flex-col items-center justify-center bg-slate-50/50 p-4 sm:p-6">
       <OnboardingForm userId={user.id} defaultName={defaultName} />
     </main>
   );

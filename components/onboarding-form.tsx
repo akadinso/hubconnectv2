@@ -345,11 +345,11 @@ export function OnboardingForm({
       )}
 
       {step === 2 && (
-        <CardContent className="space-y-5 rounded-2xl bg-white p-6 border border-slate-100 shadow-xs max-w-sm mx-auto">
+        <CardContent className="space-y-5 rounded-2xl bg-white p-6 border border-slate-100 shadow-xs max-w-xl mx-auto">
           {/* Logo Header */}
           <div className="flex flex-col items-center gap-2 text-center pb-2">
             <Image
-              src="/logo.png"
+              src="/logo-dark.png"
               alt="HubConnect Logo"
               width={140}
               height={45}
@@ -448,13 +448,6 @@ export function OnboardingForm({
               placeholder="Tell buyers a bit about yourself..."
               className="h-10 text-xs"
             />
-          </div>
-
-          {/* New Seller Badge Tag */}
-          <div className="flex justify-center pt-1">
-            <div className="flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 text-[11px] font-medium text-slate-600">
-              <span>✨</span> New Seller
-            </div>
           </div>
 
           {error && (
