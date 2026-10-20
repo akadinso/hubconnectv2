@@ -66,12 +66,13 @@ async function OfferCheckoutContent({
     seller?.shop_name || seller?.full_name || seller?.username || "Seller";
   const price = Number(offer.price);
 
-  const expired =
-    offer.status === "pending" && new Date(offer.expires_at) < new Date();
-  const usable =
-    !expired && (offer.status === "pending" || offer.status === "accepted");
+const expired =
+  offer.status === "pending" && new Date(offer.expires_at) < new Date();
+const usable =
+  offer.status === "accepted" && new Date(offer.expires_at) > new Date();
+const backHref = `/messages/${offer.conversation_id}`;
 
-  const backHref = `/messages/${offer.conversation_id}`;
+if (offer.status === "pending" && !expired) redirect(backHref);
 
   if (!usable || !listing) {
     return (

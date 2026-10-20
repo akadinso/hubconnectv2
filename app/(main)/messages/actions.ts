@@ -1,6 +1,5 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 
 type Result = { error?: string };
@@ -16,26 +15,23 @@ export async function sendOffer(
     lid: listingId,
     amount: price,
   });
-  if (error) return { error: error.message };
-
-  revalidatePath(`/messages/${conversationId}`);
-  return {};
+  return error ? { error: error.message } : {};
 }
 
-export async function declineOffer(offerId: string, conversationId: string): Promise<Result> {
+export async function acceptOffer(offerId: string): Promise<Result> {
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("accept_offer", { offer: offerId });
+  return error ? { error: error.message } : {};
+}
+
+export async function declineOffer(offerId: string): Promise<Result> {
   const supabase = await createClient();
   const { error } = await supabase.rpc("decline_offer", { offer: offerId });
-  if (error) return { error: error.message };
-
-  revalidatePath(`/messages/${conversationId}`);
-  return {};
+  return error ? { error: error.message } : {};
 }
 
-export async function withdrawOffer(offerId: string, conversationId: string): Promise<Result> {
+export async function withdrawOffer(offerId: string): Promise<Result> {
   const supabase = await createClient();
   const { error } = await supabase.rpc("cancel_offer", { offer: offerId });
-  if (error) return { error: error.message };
-
-  revalidatePath(`/messages/${conversationId}`);
-  return {};
+  return error ? { error: error.message } : {};
 }

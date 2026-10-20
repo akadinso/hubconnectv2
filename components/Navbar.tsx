@@ -2,12 +2,13 @@ import Link from "next/link";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
 import MaxWidthWrapper from "./MaxWidthWrapper";
-import { buttonVariants } from "./ui/button";
+import { Button, buttonVariants } from "./ui/button";
 import { Cart } from "./Cart";
 import { SearchComponent } from "./SearchComponent";
 import { UserDialog } from "./UserDialog";
 import { Favourites } from "./Favourite";
 import { MobileMenu } from "./MobileMenu";
+import { MessageCircle } from "lucide-react";
 
 type Role = "buyer" | "seller" | "admin";
 
@@ -53,6 +54,11 @@ export const Navbar = async () => {
       role={role}
     />
   ) : null;
+
+  const sellHref =
+    role === "seller" || role === "admin"
+      ? "/seller/listings/new"
+      : "/seller/onboarding";
 
   return (
     <header className="sticky top-0 z-50 w-full bg-[#11223f] text-white shadow-sm">
@@ -105,6 +111,25 @@ export const Navbar = async () => {
           >
             Orders
           </Link>
+
+          {user && (
+            <>
+              <Link href="/messages" aria-label="Messages">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-white hover:bg-white/10 hover:text-white"
+                >
+                  <MessageCircle className="size-5" />
+                </Button>
+              </Link>
+              <Link href={sellHref}>
+                <Button className="bg-gold text-navy hover:bg-gold/90">
+                  + Sell something
+                </Button>
+              </Link>
+            </>
+          )}
 
           {roleLink && (
             <Link

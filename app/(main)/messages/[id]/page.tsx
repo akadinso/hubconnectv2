@@ -4,12 +4,13 @@ import { notFound, redirect } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/server";
-import { one, rand } from "@/lib/format";
-import { AutoRefresh } from "@/components/AutoRefresh";
-import { ConversationChat } from "@/components/ConversationChat";
-import { OfferButtons, SendOfferForm } from "@/components/OfferActions";
-import { Button } from "@/components/ui/button";
-import type { ChatMessage } from "@/hooks/use-realtime-chat";
+import { OFFER_SELECT, toChatMsg, toOfferInfo } from "@/lib/chat";
+import { initialsOf, one } from "@/lib/format";
+import { ChatThread } from "@/components/ChatThread";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import type { OfferInfo } from "@/types/chat";
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export default function ConversationPage({
   params,
@@ -33,8 +34,9 @@ async function ConversationContent({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const supabase = await createClient();
+  if (!UUID.test(id)) notFound();
 
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -44,168 +46,112 @@ async function ConversationContent({
   const { data: conversation } = await supabase
     .from("conversations")
     .select(
-      "id, listing_id, buyer_id, seller_id, listing:listings!listing_id ( title, price )",
+      "id, listing_id, buyer_id, seller_id, listing:listings!listing_id ( id, title )",
     )
     .eq("id", id)
     .maybeSingle();
   if (!conversation) notFound();
 
-  const isSeller = conversation.seller_id === user.id;
+  const role = conversation.seller_id === user.id ? "seller" : "buyer";
+  const otherId =
+    role === "seller" ? conversation.buyer_id : conversation.seller_id;
 
   const [
-    { data: me },
-    { data: rows },
+    { data: profiles },
+    { data: msgRows },
     { data: offerRows },
     { data: myListings },
   ] = await Promise.all([
-    supabase.from("profiles").select("username").eq("id", user.id).single(),
+    supabase
+      .from("profiles")
+      .select("id, username, full_name, shop_name, avatar_url")
+      .in("id", [user.id, otherId]),
     supabase
       .from("messages")
-      .select("id, content, created_at, sender:profiles!sender_id ( username )")
-      .eq("conversation_id", id)
-      .order("created_at", { ascending: true }),
-    supabase
-      .from("offers")
-      .select(
-        "id, price, status, expires_at, listing:listings!listing_id ( title )",
-      )
+      .select("id, content, created_at, sender_id, kind, offer_id")
       .eq("conversation_id", id)
       .order("created_at", { ascending: false })
-      .limit(1),
-    isSeller
+      .limit(200),
+    supabase.from("offers").select(OFFER_SELECT).eq("conversation_id", id),
+    role === "seller"
       ? supabase
           .from("listings")
-          .select("id, title, price")
+          .select("id, title")
           .eq("seller_id", user.id)
           .eq("status", "active")
           .order("title")
       : Promise.resolve({ data: [] as any[] }),
   ]);
 
-  const initialMessages: ChatMessage[] = (rows ?? []).map((row: any) => ({
-    id: row.id,
-    content: row.content,
-    createdAt: row.created_at,
-    user: { name: one<any>(row.sender)?.username ?? "Unknown" },
-  }));
+  const byId = new Map((profiles ?? []).map((p: any) => [p.id, p]));
+  const meP: any = byId.get(user.id);
+  const otherP: any = byId.get(otherId);
 
-  const offer: any = offerRows?.[0] ?? null;
-  const expired =
-    offer?.status === "pending" && new Date(offer.expires_at) < new Date();
-  const openOffer =
-    offer && !expired && ["pending", "accepted"].includes(offer.status);
-  const offerTitle = offer ? one<any>(offer.listing)?.title : null;
-  const chatListing = one<any>(conversation.listing);
+  const label = (p: any, wantShop: boolean) =>
+    (wantShop ? p?.shop_name : null) || p?.full_name || p?.username || "Member";
+
+  const me = {
+    name: label(meP, role === "seller"),
+    avatarUrl: meP?.avatar_url ?? null,
+  };
+  const other = {
+    name: label(otherP, role === "buyer"),
+    avatarUrl: otherP?.avatar_url ?? null,
+  };
+  const sellerName = role === "seller" ? me.name : other.name;
+
+  const messages = (msgRows ?? []).map(toChatMsg).reverse();
+  const offers: Record<string, OfferInfo> = {};
+  for (const row of offerRows ?? []) offers[row.id] = toOfferInfo(row);
+
+  const listing = one<any>(conversation.listing);
 
   return (
-    <div className="mx-auto flex h-[calc(100svh-4rem)] max-w-2xl flex-col">
-      <AutoRefresh intervalMs={10000} maxTries={120} />
-
-      <div className="space-y-3 border-b p-4">
-        <div className="flex items-center justify-between gap-3">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 text-sm font-medium"
-          >
-            <ArrowLeft className="size-4" />
-            Back
-          </Link>
-          {chatListing && (
-            <p className="truncate text-xs text-muted-foreground">
-              About: {chatListing.title}
-            </p>
+    <>
+      <header className="flex items-center gap-3 border-b p-3">
+        <Link
+          href="/messages"
+          className="md:hidden"
+          aria-label="Back to messages"
+        >
+          <ArrowLeft className="size-5" />
+        </Link>
+        <Avatar className="size-9">
+          {other.avatarUrl && (
+            <AvatarImage src={other.avatarUrl} alt={other.name} />
+          )}
+          <AvatarFallback className="text-xs">
+            {initialsOf(other.name)}
+          </AvatarFallback>
+        </Avatar>
+        <div className="min-w-0">
+          <p className="truncate text-sm font-semibold">{other.name}</p>
+          {listing && (
+            <Link
+              href={`/listings/${listing.id}`}
+              className="block truncate text-xs text-muted-foreground underline-offset-4 hover:underline"
+            >
+              About: {listing.title}
+            </Link>
           )}
         </div>
+      </header>
 
-        {/* Offer panel */}
-        <div className="rounded-xl bg-muted p-3 text-sm">
-          {isSeller ? (
-            openOffer && offer.status === "pending" ? (
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <p>
-                  Your offer: <strong>{rand(offer.price)}</strong> for{" "}
-                  {offerTitle}. Waiting for the buyer.
-                </p>
-                <OfferButtons
-                  offerId={offer.id}
-                  conversationId={id}
-                  role="seller"
-                />
-              </div>
-            ) : openOffer && offer.status === "accepted" ? (
-              <p>
-                The buyer is paying <strong>{rand(offer.price)}</strong> for{" "}
-                {offerTitle}.
-              </p>
-            ) : (
-              <div className="space-y-2">
-                <p className="font-medium">Agree a price with the buyer</p>
-                <SendOfferForm
-                  conversationId={id}
-                  listings={(myListings ?? []).map((l: any) => ({
-                    id: l.id,
-                    title: l.title,
-                    price: l.price != null ? Number(l.price) : null,
-                  }))}
-                  defaultListingId={conversation.listing_id}
-                />
-                {offer?.status === "paid" && (
-                  <p className="text-xs text-muted-foreground">
-                    Last offer ({rand(offer.price)}) was paid. See Orders to
-                    fulfil.
-                  </p>
-                )}
-                {offer && (offer.status === "declined" || expired) && (
-                  <p className="text-xs text-muted-foreground">
-                    Last offer ({rand(offer.price)}) was{" "}
-                    {expired ? "not taken in time" : "declined"}.
-                  </p>
-                )}
-              </div>
-            )
-          ) : openOffer ? (
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <p>
-                The seller offered <strong>{rand(offer.price)}</strong> for{" "}
-                {offerTitle}.
-              </p>
-              <div className="flex gap-2">
-                <Link href={`/checkout/offer/${offer.id}`}>
-                  <Button size="sm">Checkout {rand(offer.price)}</Button>
-                </Link>
-                {offer.status === "pending" && (
-                  <OfferButtons
-                    offerId={offer.id}
-                    conversationId={id}
-                    role="buyer"
-                  />
-                )}
-              </div>
-            </div>
-          ) : offer?.status === "paid" ? (
-            <p>
-              You paid <strong>{rand(offer.price)}</strong> for {offerTitle}.{" "}
-              <Link href="/orders" className="underline underline-offset-4">
-                View my orders
-              </Link>
-            </p>
-          ) : (
-            <p className="text-muted-foreground">
-              Want a different price? Ask the seller here, and they can send you
-              an offer to check out.
-            </p>
-          )}
-        </div>
-      </div>
-
-      <div className="min-h-0 flex-1">
-        <ConversationChat
-          conversationId={id}
-          userId={user.id}
-          username={me?.username ?? "me"}
-          initialMessages={initialMessages}
-        />
-      </div>
-    </div>
+      <ChatThread
+        conversationId={id}
+        userId={user.id}
+        role={role}
+        sellerName={sellerName}
+        me={me}
+        other={other}
+        initialMessages={messages}
+        initialOffers={offers}
+        myListings={(myListings ?? []).map((l: any) => ({
+          id: l.id,
+          title: l.title,
+        }))}
+        defaultListingId={conversation.listing_id}
+      />
+    </>
   );
 }
