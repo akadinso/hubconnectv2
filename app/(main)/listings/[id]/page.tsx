@@ -80,6 +80,17 @@ async function ListingContent({ params }: { params: Promise<{ id: string }> }) {
   const reviews = (reviewRows ?? []) as any[];
 
   const isOwner = listing.seller_id === user.id;
+  const { data: bought } = isOwner
+    ? { data: null }
+    : await supabase
+        .from("order_items")
+        .select("id, order:orders!inner ( buyer_id )")
+        .eq("listing_id", id)
+        .eq("status", "completed")
+        .eq("order.buyer_id", user.id)
+        .limit(1);
+
+  const canReview = !!bought?.length;
   const myReview = reviews.find((r) => r.reviewer_id === user.id) ?? null;
 
   const sellerName =
@@ -269,15 +280,20 @@ async function ListingContent({ params }: { params: Promise<{ id: string }> }) {
           )}
         </h2>
 
-        {!isOwner && (
-          <ReviewForm
-            listingId={listing.id}
-            initialRating={myReview?.rating ?? 0}
-            initialComment={myReview?.comment ?? ""}
-            isEditing={!!myReview}
-            existingPhotoCount={myReview?.photos?.length ?? 0}
-          />
-        )}
+        {!isOwner &&
+          (canReview ? (
+            <ReviewForm
+              listingId={listing.id}
+              initialRating={myReview?.rating ?? 0}
+              initialComment={myReview?.comment ?? ""}
+              isEditing={!!myReview}
+              existingPhotoCount={myReview?.photos?.length ?? 0}
+            />
+          ) : (
+            <p className="rounded-lg border bg-muted/50 p-3 text-sm text-muted-foreground">
+              Only buyers who have received this item can leave a review.
+            </p>
+          ))}
 
         {reviews.length === 0 ? (
           <p className="text-sm text-muted-foreground">

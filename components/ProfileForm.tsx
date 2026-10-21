@@ -194,6 +194,9 @@ export function ProfileForm({
           required
         />
         <p className="text-xs text-muted-foreground">
+          This is public. Pick a nickname, not your student number.
+        </p>
+        <p className="text-xs text-muted-foreground">
           Letters, numbers and underscores. Changing it changes your profile
           link.
         </p>
@@ -218,7 +221,7 @@ export function ProfileForm({
         <Label htmlFor="email">Email</Label>
         <Input id="email" value={email} disabled />
         <p className="text-xs text-muted-foreground">
-          Your email can't be changed here.
+          Your email can&apos;t be changed here.
         </p>
       </div>
 

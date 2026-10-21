@@ -98,7 +98,12 @@ export async function submitReview(
     { onConflict: "listing_id,reviewer_id" },
   );
 
-  if (error) return { error: error.message };
+  if (error) {
+  if (error.code === "42501") {
+    return { error: "You can only review items you've bought and received." };
+  }
+  return { error: error.message };
+}
 
   revalidatePath(`/listings/${listingId}`);
   return {};

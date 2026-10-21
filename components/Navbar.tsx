@@ -23,6 +23,7 @@ export const Navbar = async () => {
   let fullName: string | null = null;
   let username: string | null = null;
   let avatarUrl: string | null = null;
+  let applicationPending = false;
 
   if (user) {
     const { data: profile } = await supabase
@@ -30,7 +31,14 @@ export const Navbar = async () => {
       .select("role, full_name, username, avatar_url")
       .eq("id", user.id)
       .maybeSingle();
-
+    if (role === "buyer") {
+      const { count } = await supabase
+        .from("seller_applications")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", user.id)
+        .eq("status", "pending");
+      applicationPending = (count ?? 0) > 0;
+    }
     role = (profile?.role as Role | undefined) ?? null;
     fullName = profile?.full_name ?? null;
     username = profile?.username ?? null;
@@ -52,6 +60,7 @@ export const Navbar = async () => {
       username={username}
       avatarUrl={avatarUrl}
       role={role}
+      applicationPending={applicationPending}
     />
   ) : null;
 
@@ -83,6 +92,7 @@ export const Navbar = async () => {
             <MobileMenu
               isUser={!!user}
               roleLink={roleLink}
+              sellHref={sellHref}
               userSlot={userDialog}
             />
           </div>

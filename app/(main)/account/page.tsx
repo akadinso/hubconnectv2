@@ -42,11 +42,6 @@ async function AccountContent() {
     .maybeSingle();
 
   const isSeller = profile?.role === "seller" || profile?.role === "admin";
-  const name =
-    profile?.shop_name ||
-    profile?.full_name ||
-    profile?.username ||
-    "Your account";
 
   const isNew =
     isSeller &&
@@ -56,6 +51,17 @@ async function AccountContent() {
 
   const student = studentStatus(profile?.expected_graduation);
 
+  const { data: application } = await supabase
+    .from("seller_applications")
+    .select("status")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  const pending = application?.status === "pending";
+
+  const name = profile?.full_name || profile?.shop_name || null;
   const tiles = [
     isSeller
       ? {
@@ -64,12 +70,19 @@ async function AccountContent() {
           title: "My Listings",
           text: "Manage what you're selling",
         }
-      : {
-          href: "/seller/onboarding",
-          icon: Store,
-          title: "Become a seller",
-          text: "Apply to sell on HubConnect",
-        },
+      : pending
+        ? {
+            href: "/seller/onboarding",
+            icon: Store,
+            title: "Application pending",
+            text: "We're reviewing your application",
+          }
+        : {
+            href: "/seller/onboarding",
+            icon: Store,
+            title: "Become a seller",
+            text: "Apply to sell on HubConnect",
+          },
     {
       href: "/orders",
       icon: ShoppingBag,
@@ -83,7 +96,6 @@ async function AccountContent() {
       text: "Guides, templates and incubation hub support",
     },
   ];
-
   return (
     <MaxWidthWrapper className="w-full max-w-4xl space-y-10 py-8">
       <section className="flex flex-col gap-5 sm:flex-row sm:items-center">
@@ -97,7 +109,15 @@ async function AccountContent() {
         </Avatar>
 
         <div className="min-w-0 flex-1 space-y-2">
-          <h1 className="truncate text-2xl font-bold">{name}</h1>
+          <h1 className="truncate text-2xl font-bold">
+            {name ?? "Add your name"}
+          </h1>
+          <p className="truncate text-sm text-muted-foreground">
+            {profile?.username ? `@${profile.username}` : ""}
+            {profile?.shop_name && profile?.full_name
+              ? ` · ${profile.shop_name}`
+              : ""}
+          </p>
           <div className="flex flex-wrap gap-2">
             {isNew && (
               <Badge className="bg-primary text-primary-foreground hover:bg-primary">

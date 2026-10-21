@@ -66,12 +66,12 @@ export function LoginForm({
       {/* Left Branding Hero Column */}
       <div className="relative hidden flex-col justify-between bg-[#11223f] p-12 text-white lg:flex lg:col-span-5">
         <div className="space-y-6">
-          <div className="relative size-20 overflow-hidden rounded-full border-2 border-white/20">
+          <div className="relative size-25 overflow-hidden rounded-full border-2 border-white/20 bg-white">
             <Image
-              src="/avatar-testimonial.png"
+              src="/eduvos-logo.png"
               alt="Student Seller"
               fill
-              className="object-cover"
+              className="object-contain p-3"
             />
           </div>
           <div className="space-y-2">

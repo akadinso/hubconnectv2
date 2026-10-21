@@ -400,6 +400,9 @@ export function OnboardingForm({
               maxLength={20}
               className="h-10 text-xs"
             />
+            <p className="text-xs text-muted-foreground">
+              This is public. Pick a nickname, not your student number.
+            </p>
             <p className="text-[10px] text-slate-400">
               3–20 characters. Lowercase letters, numbers, and underscores only.
             </p>

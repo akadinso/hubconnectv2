@@ -85,11 +85,13 @@ export function UserDialog({
   username,
   avatarUrl,
   role,
+  applicationPending,
 }: {
   fullName: string | null;
   username?: string | null;
   avatarUrl: string | null;
   role: Role | null;
+  applicationPending?: boolean;
 }) {
   const router = useRouter();
 
@@ -100,7 +102,7 @@ export function UserDialog({
     orders: true,
   });
 
-  const displayName = fullName || username || "Your account";
+  const displayName = fullName || "Add your name";
 
   async function handleSignOut() {
     setSigningOut(true);
@@ -212,8 +214,12 @@ export function UserDialog({
           )}
           {role === "buyer" && (
             <Link href="/seller/onboarding" onClick={() => setOpen(false)}>
-              <Button size="sm" type="button">
-                Become a seller
+              <Button
+                size="sm"
+                type="button"
+                variant={applicationPending ? "secondary" : "default"}
+              >
+                {applicationPending ? "Application pending" : "Become a seller"}
               </Button>
             </Link>
           )}

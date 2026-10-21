@@ -22,8 +22,14 @@ export function initialsOf(name: string) {
 
 export const shortId = (id: string) => `HC-${id.slice(0, 8).toUpperCase()}`;
 
-export const rand = (n: number | string | null | undefined) =>
-  `R${Number(n ?? 0).toFixed(2)}`;
+// One price format everywhere: R1 250.00 (two decimals, non-breaking space for thousands)
+export function rand(value: number | string | null | undefined) {
+  const n = Number(value ?? 0);
+  if (!Number.isFinite(n)) return "R0.00";
+  const [whole, cents] = Math.abs(n).toFixed(2).split(".");
+  const grouped = whole.replace(/\B(?=(\d{3})+(?!\d))/g, "\u00A0");
+  return `${n < 0 ? "-" : ""}R${grouped}.${cents}`;
+}
 
 export function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("en-ZA", {
