@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 
 export default function GrowPage() {
   return (
-    <Suspense fallback={<MaxWidthWrapper className="w-full py-10" />}>
+    <Suspense fallback={<MaxWidthWrapper className="w-full py-10" >Loading...</MaxWidthWrapper>}>
       <GrowContent />
     </Suspense>
   );

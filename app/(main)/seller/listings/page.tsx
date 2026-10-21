@@ -6,7 +6,7 @@ import MaxWidthWrapper from "@/components/MaxWidthWrapper";
 import { BusinessCheckinDialog } from "@/components/BusinessCheckinDialog";
 import { MyListings } from "@/components/MyListings";
 import { Button } from "@/components/ui/button";
-import type { SellerListing } from "@/types/seller-listing";
+import type { SellerListing } from "@/types/seller-listings";
 
 export default function MyListingsPage() {
   return (

@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 import { listingImagePath } from "@/lib/storage-path";
 import { cn } from "@/lib/utils";
-import type { SellerListing } from "@/types/seller-listing";
+import type { SellerListing } from "@/types/seller-listings";
 
 const TABS = [
   { value: "active", label: "Active" },
