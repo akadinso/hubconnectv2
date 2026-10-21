@@ -110,7 +110,7 @@ export function OrderItemActions({
 
   return (
     <div className="flex flex-wrap gap-2">
-      {role === "buyer" && status === "confirmed" && (
+      {role === "buyer" && (status === "pending" || status === "confirmed") && (
         <Confirm
           trigger={<Button size="sm">Item received</Button>}
           title="Confirm you received this item?"
@@ -146,17 +146,6 @@ export function OrderItemActions({
               Rate your experience
             </Button>
           }
-        />
-      )}
-
-      {role === "seller" && status === "pending" && (
-        <Confirm
-          trigger={<Button size="sm">Mark as handed over</Button>}
-          title="Mark this item as handed over?"
-          description="The buyer will be asked to confirm they received it. You get paid once they do."
-          confirmLabel="Yes, handed over"
-          busy={busy}
-          onConfirm={() => run(markHandedOver, "Marked as handed over")}
         />
       )}
 

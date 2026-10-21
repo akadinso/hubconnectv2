@@ -98,6 +98,13 @@ async function OrdersContent() {
 
                 <EscrowSteps status={item.status} />
 
+                <Link
+                  href={`/orders/${item.id}`}
+                  className="text-xs text-primary underline-offset-4 hover:underline"
+                >
+                  Track order
+                </Link>
+
                 <OrderItemActions
                   role="buyer"
                   itemId={item.id}

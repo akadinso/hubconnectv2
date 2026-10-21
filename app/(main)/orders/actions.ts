@@ -40,3 +40,41 @@ export async function requestPayout(amount: number): Promise<Result> {
   revalidatePath("/seller");
   return {};
 }
+
+export async function releaseWithCode(itemId: string, code: string): Promise<Result> {
+  const clean = code.trim();
+  if (!/^\d{4}$/.test(clean)) return { error: "Enter the 4-digit code." };
+
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("seller_release_with_code", {
+    item: itemId,
+    entered: clean,
+  });
+  if (error) return { error: error.message };
+
+  const outcome = String(data);
+
+  if (outcome === "ok") {
+    revalidatePath("/orders");
+    revalidatePath(`/orders/${itemId}`);
+    revalidatePath("/seller");
+    return {};
+  }
+
+  if (outcome.startsWith("wrong:")) {
+    const left = Number(outcome.split(":")[1]);
+    return {
+      error: `That code isn't right. ${left} ${left === 1 ? "try" : "tries"} left.`,
+    };
+  }
+
+  const messages: Record<string, string> = {
+    locked:
+      "Too many wrong tries. Ask the buyer to confirm in their orders, or contact support.",
+    paused: "Payment is paused while a dispute is open.",
+    not_ready: "This order can't be completed right now.",
+    no_code: "This order has no handover code. Ask the buyer to confirm instead.",
+    forbidden: "You can't complete this order.",
+  };
+  return { error: messages[outcome] ?? "Something went wrong. Please try again." };
+}

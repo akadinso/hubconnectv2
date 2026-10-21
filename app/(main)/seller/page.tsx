@@ -11,6 +11,7 @@ import { SellerListings } from "@/components/SellerListings";
 import { StatusBadge } from "@/components/StatusBadge";
 import type { SellerListing } from "@/types/seller-listings";
 import { Card, CardContent } from "@/components/ui/card";
+import Link from "next/link";
 
 export default function SellerPage() {
   return (
@@ -166,7 +167,12 @@ async function SellerContent() {
                   </div>
 
                   <EscrowSteps status={item.status} />
-
+                  <Link
+                    href={`/orders/${item.id}`}
+                    className="text-xs text-primary underline-offset-4 hover:underline"
+                  >
+                    Track order
+                  </Link>
                   <OrderItemActions
                     role="seller"
                     itemId={item.id}
