@@ -93,18 +93,17 @@ export function ReportDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger render={trigger} />
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-md">
+      <DialogContent className="max-h-[90vh] overflow-y-auto rounded-2xl sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{copy.title}</DialogTitle>
           <DialogDescription>{copy.description}</DialogDescription>
         </DialogHeader>
-
         <fieldset className="space-y-2">
           <legend className="sr-only">Reason</legend>
           {REASONS[kind].map((r) => (
             <label
               key={r}
-              className="flex cursor-pointer items-center gap-3 rounded-lg border p-3 text-sm has-[:checked]:border-foreground"
+              className="flex cursor-pointer items-center gap-3 rounded-lg border bg-background px-3 py-2.5 text-sm has-[:checked]:border-primary has-[:checked]:bg-primary/5"
             >
               <input
                 type="radio"
@@ -118,7 +117,6 @@ export function ReportDialog({
             </label>
           ))}
         </fieldset>
-
         <div className="space-y-2">
           <Label htmlFor="report-details">Additional details (optional)</Label>
           <Textarea
@@ -130,14 +128,11 @@ export function ReportDialog({
             placeholder="Anything that helps us look into it"
           />
         </div>
-
         <div className="space-y-2">
           <Label>Photos of the product (optional, up to 4)</Label>
           <PhotoPicker files={files} onChange={setFiles} disabled={pending} />
         </div>
-
         {error && <p className="text-sm text-destructive">{error}</p>}
-
         <DialogFooter>
           <Button
             variant="outline"

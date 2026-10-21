@@ -25,12 +25,16 @@ import { submitReview } from "@/app/(main)/listings/[id]/actions";
 export function RatingDialog({
   listingId,
   listingTitle,
+  listingImage,
+  sellerName,
   trigger,
   initialRating = 0,
   initialComment = "",
 }: {
   listingId: string;
   listingTitle: string;
+  listingImage?: string | null;
+  sellerName?: string;
   trigger: React.ReactElement;
   initialRating?: number;
   initialComment?: string;
@@ -65,7 +69,7 @@ export function RatingDialog({
         return;
       }
 
-      toast.success("Thanks for your review");
+      toast.success("Thanks for your rating");
       setFiles([]);
       setOpen(false);
       router.refresh();
@@ -77,13 +81,29 @@ export function RatingDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger render={trigger} />
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-md">
+      <DialogContent className="max-h-[90vh] overflow-y-auto rounded-2xl sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Rate your experience</DialogTitle>
-          <DialogDescription className="truncate">
-            {listingTitle}
+          <DialogDescription>
+            {sellerName
+              ? `How was your order from ${sellerName}?`
+              : "How was your order?"}
           </DialogDescription>
         </DialogHeader>
+
+        <div className="flex items-center gap-3 rounded-xl bg-muted/60 p-2">
+          <div className="size-12 shrink-0 overflow-hidden rounded-lg bg-muted">
+            {listingImage && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={listingImage}
+                alt=""
+                className="size-full object-cover"
+              />
+            )}
+          </div>
+          <p className="truncate text-sm font-medium">{listingTitle}</p>
+        </div>
 
         <div
           className="flex justify-center gap-1"
@@ -99,9 +119,9 @@ export function RatingDialog({
             >
               <Star
                 className={cn(
-                  "size-8",
+                  "size-9",
                   value <= shown
-                    ? "fill-yellow-400 text-yellow-400"
+                    ? "fill-gold text-gold"
                     : "text-muted-foreground/40",
                 )}
               />
@@ -117,11 +137,12 @@ export function RatingDialog({
             onChange={(e) => setComment(e.target.value)}
             maxLength={1000}
             rows={3}
+            placeholder="Tell other students what you thought"
           />
         </div>
 
         <div className="space-y-2">
-          <Label>Photos of the product (optional)</Label>
+          <Label>Photos (optional)</Label>
           <PhotoPicker files={files} onChange={setFiles} disabled={pending} />
         </div>
 
@@ -133,10 +154,10 @@ export function RatingDialog({
             onClick={() => setOpen(false)}
             disabled={pending}
           >
-            Cancel
+            Not now
           </Button>
           <Button onClick={handleSubmit} disabled={pending || rating === 0}>
-            {pending ? "Saving..." : "Submit review"}
+            {pending ? "Saving..." : "Submit rating"}
           </Button>
         </DialogFooter>
       </DialogContent>

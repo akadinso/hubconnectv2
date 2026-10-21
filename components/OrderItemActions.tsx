@@ -29,6 +29,8 @@ type Props = {
   listingId: string | null;
   title: string;
   status: string;
+  image?: string | null;
+  sellerName?: string;
 };
 
 function Confirm({
@@ -82,6 +84,8 @@ export function OrderItemActions({
   listingId,
   title,
   status,
+  image,
+  sellerName,
 }: Props) {
   const router = useRouter();
   const [busy, setBusy] = React.useState(false);
@@ -135,6 +139,8 @@ export function OrderItemActions({
         <RatingDialog
           listingId={listingId}
           listingTitle={title}
+          listingImage={image}
+          sellerName={sellerName}
           trigger={
             <Button size="sm" variant="outline" type="button">
               Rate your experience

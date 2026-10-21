@@ -198,6 +198,11 @@ export function UserDialog({
         </div>
 
         <div className="flex flex-wrap gap-2">
+          <Link href="/account" onClick={() => setOpen(false)}>
+            <Button size="sm" type="button">
+              My account
+            </Button>
+          </Link>
           {username && (
             <Link href={`/profile/${username}`} onClick={() => setOpen(false)}>
               <Button variant="outline" size="sm" type="button">
