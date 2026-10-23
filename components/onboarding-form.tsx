@@ -127,7 +127,7 @@ export function OnboardingForm({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-2xl">Welcome 👋</CardTitle>
+        <CardTitle className="text-2xl">Welcome To HubConnect</CardTitle>
         <CardDescription>Step {step} of 2</CardDescription>
       </CardHeader>
 
