@@ -13,7 +13,11 @@ import MaxWidthWrapper from "@/components/MaxWidthWrapper";
 
 export default function FeesPage() {
   return (
-    <Suspense fallback={<MaxWidthWrapper className="w-full py-10" />}>
+    <Suspense
+      fallback={
+        <MaxWidthWrapper className="w-full py-10">Loading...</MaxWidthWrapper>
+      }
+    >
       <FeesContent />
     </Suspense>
   );
