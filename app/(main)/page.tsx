@@ -24,12 +24,11 @@ export default async function Home() {
   // 2. Profile and onboarding status
   const { data: profile } = await supabase
     .from("profiles")
-    .select("role, onboarded")
+    .select("role, onboarded, campus_id")
     .eq("id", user.id)
     .maybeSingle();
 
-  if (!profile?.onboarded) redirect("/onboarding");
-
+  if (!profile?.onboarded || !profile?.campus_id) redirect("/onboarding");
   const isAdmin = profile.role === "admin";
   const canSell = profile.role === "seller" || isAdmin;
 

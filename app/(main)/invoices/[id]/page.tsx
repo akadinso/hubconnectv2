@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { nameOf, one, rand } from "@/lib/format";
 import MaxWidthWrapper from "@/components/MaxWidthWrapper";
 import { PrintButton } from "@/components/PrintButton";
+import { getBuyerFee } from "@/lib/fees";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -22,7 +23,11 @@ export default function InvoicePage({
   params: Promise<{ id: string }>;
 }) {
   return (
-    <Suspense fallback={<MaxWidthWrapper className="w-full py-10" >Loading...</MaxWidthWrapper>}>
+    <Suspense
+      fallback={
+        <MaxWidthWrapper className="w-full py-10">Loading...</MaxWidthWrapper>
+      }
+    >
       <InvoiceContent params={params} />
     </Suspense>
   );
@@ -55,6 +60,7 @@ async function InvoiceContent({ params }: { params: Promise<{ id: string }> }) {
   const seller = one<any>(offer.seller);
   const sellerName = seller?.shop_name || nameOf(seller, "Seller");
   const paid = offer.status === "paid";
+  const fee = await getBuyerFee(supabase, Number(offer.price));
 
   return (
     <MaxWidthWrapper className="w-full max-w-xl space-y-6 py-10">
@@ -114,10 +120,18 @@ async function InvoiceContent({ params }: { params: Promise<{ id: string }> }) {
           </tbody>
           <tfoot>
             <tr>
-              <td colSpan={2} className="pt-3 text-right font-bold">
+              <td colSpan={2} className="pt-3 text-right text-muted-foreground">
+                Buyer protection fee
+              </td>
+              <td className="pt-3 text-right">{rand(fee)}</td>
+            </tr>
+            <tr>
+              <td colSpan={2} className="pt-2 text-right font-bold">
                 Total
               </td>
-              <td className="pt-3 text-right font-bold">{rand(offer.price)}</td>
+              <td className="pt-2 text-right font-bold">
+                {rand(Number(offer.price) + fee)}
+              </td>
             </tr>
           </tfoot>
         </table>

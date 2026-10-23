@@ -11,4 +11,5 @@ export type SellerListing = {
   rate_type: string | null;
   availability: string[];
   status: "draft" | "active" | "archived";
+  campus_id: string | null;
 };

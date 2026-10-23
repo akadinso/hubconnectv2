@@ -21,11 +21,16 @@ export default function NewListingPage() {
 }
 
 async function NewListingContent() {
-  const { supabase, seller } = await requireSeller();
-  const { data: categories } = await supabase
-    .from("categories")
-    .select("id, name")
-    .order("name");
+  const { supabase, profile, seller } = await requireSeller();
+
+  const [{ data: categories }, { data: campuses }] = await Promise.all([
+    supabase.from("categories").select("id, name").order("name"),
+    supabase
+      .from("campuses")
+      .select("id, name")
+      .eq("active", true)
+      .order("name"),
+  ]);
 
   return (
     <MaxWidthWrapper className="w-full max-w-4xl space-y-6 py-8">
@@ -36,7 +41,12 @@ async function NewListingContent() {
         <ArrowLeft className="size-4" />
         Seller dashboard
       </Link>
-      <ListingWizard categories={categories ?? []} seller={seller} />
+      <ListingWizard
+        categories={categories ?? []}
+        campuses={campuses ?? []}
+        defaultCampusId={profile?.campus_id ?? null}
+        seller={seller}
+      />
     </MaxWidthWrapper>
   );
 }

@@ -34,17 +34,19 @@ async function EditListingContent({
   const { id } = await params;
   const { supabase, user, seller } = await requireSeller();
 
-  const [{ data: listing }, { data: categories }] = await Promise.all([
-    supabase
-      .from("listings")
-      .select(
-        "id, title, description, price, image_url, images, type, category_id, condition, rate_type, availability, status",
-      )
-      .eq("id", id)
-      .eq("seller_id", user.id)
-      .maybeSingle(),
-    supabase.from("categories").select("id, name").order("name"),
-  ]);
+  const [{ data: listing }, { data: categories }, { data: campuses }] =
+    await Promise.all([
+      supabase
+        .from("listings")
+        .select(
+          "id, title, description, price, image_url, images, type, category_id, condition, rate_type, availability, status, campus_id",
+        )
+        .eq("id", id)
+        .eq("seller_id", user.id)
+        .maybeSingle(),
+      supabase.from("categories").select("id, name").order("name"),
+      supabase.from("campuses").select("id, name").order("name"),
+    ]);
 
   if (!listing) notFound();
 
@@ -59,6 +61,7 @@ async function EditListingContent({
       </Link>
       <ListingWizard
         categories={categories ?? []}
+        campuses={campuses ?? []}
         seller={seller}
         initial={
           {

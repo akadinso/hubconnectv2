@@ -5,41 +5,40 @@ import { OnboardingForm } from "@/components/onboarding-form";
 export default async function OnboardingPage() {
   const supabase = await createClient();
 
-  // 1. Authenticate user
   const {
     data: { user },
-    error: userError,
   } = await supabase.auth.getUser();
+  if (!user) redirect("/auth/login");
 
-  if (userError || !user) {
-    redirect("/auth/login");
-  }
+  const [{ data: profile }, { data: campuses }] = await Promise.all([
+    supabase
+      .from("profiles")
+      .select("onboarded, full_name, username, campus_id")
+      .eq("id", user.id)
+      .maybeSingle(),
+    supabase
+      .from("campuses")
+      .select("id, name")
+      .eq("active", true)
+      .order("name"),
+  ]);
 
-  // 2. Fetch profile onboarding and role status
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("full_name, onboarded, role")
-    .eq("id", user.id)
-    .maybeSingle();
-
-  // 3. If already onboarded, redirect user based on role or to home page
-  if (profile?.onboarded) {
-    if (profile.role === "seller" || profile.role === "admin") {
-      redirect("/seller");
-    }
-    redirect("/");
-  }
-
-  // Fallback to email metadata or user email prefix if profile full_name is empty
-  const defaultName =
-    profile?.full_name ||
-    user.user_metadata?.full_name ||
-    user.email?.split("@")[0] ||
-    "";
+  // Done only once there's a campus too. Existing users come back through here once.
+  if (profile?.onboarded && profile?.campus_id) redirect("/");
 
   return (
-    <main className="flex min-h-screen w-full flex-col items-center justify-center bg-slate-50/50 p-4 sm:p-6">
-      <OnboardingForm userId={user.id} defaultName={defaultName} />
-    </main>
+    <div className="flex min-h-svh items-center justify-center p-6">
+      <div className="w-full max-w-md">
+        <OnboardingForm
+          userId={user.id}
+          defaultName={
+            profile?.full_name ?? user.user_metadata?.full_name ?? ""
+          }
+          defaultUsername={profile?.username ?? ""}
+          defaultCampusId={profile?.campus_id ?? ""}
+          campuses={campuses ?? []}
+        />
+      </div>
+    </div>
   );
 }

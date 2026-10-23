@@ -12,6 +12,7 @@ import { StatusBadge } from "@/components/StatusBadge";
 import type { SellerListing } from "@/types/seller-listings";
 import { Card, CardContent } from "@/components/ui/card";
 import Link from "next/link";
+import { getFees, pct } from "@/lib/fees";
 
 export default function SellerPage() {
   return (
@@ -76,6 +77,14 @@ async function SellerContent() {
   const w: any = Array.isArray(walletRes.data)
     ? walletRes.data[0]
     : walletRes.data;
+  const fees = await getFees(supabase);
+  const salesMonth = Number(w?.sales_month ?? 0);
+  const feesMonth = Number(w?.fees_month ?? 0);
+  const capLeft = Number(w?.cap_left ?? fees.sellerMonthlyCap);
+  const capPct =
+    fees.sellerMonthlyCap > 0
+      ? Math.min(100, (feesMonth / fees.sellerMonthlyCap) * 100)
+      : 0;
   const held = Number(w?.held ?? 0);
   const available = Number(w?.available ?? 0);
   const paidOut = Number(w?.paid_out ?? 0);
@@ -98,7 +107,11 @@ async function SellerContent() {
               value: held,
               hint: "Waiting for buyers to confirm",
             },
-            { label: "Available", value: available, hint: "Ready to pay out" },
+            {
+              label: "Paid out every week",
+              value: available,
+              hint: "Ready to pay out",
+            },
             { label: "Paid out", value: paidOut, hint: "Sent to your bank" },
           ].map((s) => (
             <Card key={s.label}>
@@ -110,6 +123,36 @@ async function SellerContent() {
             </Card>
           ))}
         </div>
+
+        <div className="space-y-2 rounded-xl border p-4 text-sm">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="font-medium">This month</p>
+            <p className="text-xs text-muted-foreground">
+              {pct(fees.sellerRate)} fee, never more than{" "}
+              {rand(fees.sellerMonthlyCap)} a month
+            </p>
+          </div>
+          <div className="h-2 overflow-hidden rounded-full bg-muted">
+            <div
+              className="h-full bg-primary"
+              style={{ width: `${capPct}%` }}
+            />
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Sales {rand(salesMonth)} · Fees so far {rand(feesMonth)} ·{" "}
+            {capLeft <= 0
+              ? "Cap reached: no more fees until the 1st"
+              : `${rand(capLeft)} left before the cap`}
+            . The fee comes off your payouts, so you never get a bill.{" "}
+            <Link href="/fees" className="underline underline-offset-4">
+              How fees work
+            </Link>
+          </p>
+        </div>
+
+        <p className="text-xs text-muted-foreground">
+          We pay out every week. Need it sooner? Ask below.
+        </p>
 
         <PayoutForm available={available} />
 

@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Listing } from "@/types/listing";
+import { one } from "@/lib/format";
 
 type GetListingsOptions = {
   limit?: number;
@@ -7,6 +8,7 @@ type GetListingsOptions = {
   search?: string;
   type?: "product" | "service";
   sellerId?: string;
+  campusId?: string;
 };
 
 const SELECT = `
@@ -19,6 +21,7 @@ const SELECT = `
   rating,
   review_count,
   created_at,
+  campus:campuses!campus_id ( name ),
   seller:profiles!seller_id (
     username,
     full_name,
@@ -49,6 +52,7 @@ function toListing(row: any): Listing {
     image_url: row.image_url ?? null,
     rating: row.rating,
     reviewCount: row.review_count,
+    campus: one<any>(row.campus)?.name ?? null,
     seller: {
       name: row.seller?.username ?? row.seller?.full_name ?? "Seller",
       avatarUrl: row.seller?.avatar_url ?? null,
@@ -62,7 +66,7 @@ export async function getListings(
   supabase: SupabaseClient,
   opts: GetListingsOptions = {},
 ): Promise<Listing[]> {
-  const { limit = 20, sort = "newest", search, type, sellerId } = opts;
+  const { limit = 20, sort = "newest", search, type, sellerId, campusId } = opts;
 
   let query = supabase
     .from("listings")
@@ -81,6 +85,7 @@ export async function getListings(
 
   if (type) query = query.eq("type", type);
   if (sellerId) query = query.eq("seller_id", sellerId);
+  if (campusId) query = query.eq("campus_id", campusId);
   if (limit) query = query.limit(limit);
 
   const { data, error } = await query;

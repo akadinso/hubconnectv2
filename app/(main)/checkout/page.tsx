@@ -8,6 +8,8 @@ import MaxWidthWrapper from "@/components/MaxWidthWrapper";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { PaymentPanel } from "@/components/PaymentPanel";
+import { buyerFeeLabel, getBuyerFee, getFees } from "@/lib/fees";
+import { rand } from "@/lib/format";
 
 export default function CheckoutPage() {
   return (
@@ -51,7 +53,8 @@ async function CheckoutContent() {
     (sum, l) => sum + (l.available ? l.price! * l.quantity : 0),
     0,
   );
-
+  const fees = await getFees(supabase);
+  const fee = await getBuyerFee(supabase, total, fees);
   if (lines.length === 0) {
     return (
       <MaxWidthWrapper className="w-full space-y-4 py-16 text-center">
@@ -112,19 +115,36 @@ async function CheckoutContent() {
 
       <Separator />
 
-      <div className="flex items-center justify-between text-lg font-bold">
-        <span>Total</span>
-        <span>R{total.toFixed(2)}</span>
+      <Separator />
+
+      <div className="space-y-1 text-sm">
+        <div className="flex justify-between">
+          <span>Items</span>
+          <span>{rand(total)}</span>
+        </div>
+        <div className="flex justify-between text-muted-foreground">
+          <span>Buyer protection ({buyerFeeLabel(fees)})</span>
+          <span>{rand(fee)}</span>
+        </div>
       </div>
 
+      <div className="flex items-center justify-between text-lg font-bold">
+        <span>Total</span>
+        <span>{rand(total + fee)}</span>
+      </div>
+
+      <p className="text-xs text-muted-foreground">
+        Buyer protection means your money is held until you get your item.{" "}
+        <Link href="/fees" className="underline underline-offset-4">
+          How fees work
+        </Link>
+      </p>
+
       <PaymentPanel
-        total={total}
+        total={total + fee}
         disabled={unavailable.length > 0}
         demo={process.env.PAYMENTS_MODE === "demo"}
       />
-      <p className="text-center text-xs text-muted-foreground">
-        You'll be taken to PayFast to pay securely.
-      </p>
     </MaxWidthWrapper>
   );
 }

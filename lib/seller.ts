@@ -11,7 +11,7 @@ export async function requireSeller() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("role, shop_name, full_name, username, avatar_url")
+    .select("role, shop_name, full_name, username, avatar_url, campus_id")
     .eq("id", user.id)
     .maybeSingle();
 

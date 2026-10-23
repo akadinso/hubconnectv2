@@ -167,14 +167,12 @@ export function ChatThread({
     ]);
     setText("");
 
-    const { error } = await supabase
-      .from("messages")
-      .insert({
-        id,
-        conversation_id: conversationId,
-        sender_id: userId,
-        content,
-      });
+    const { error } = await supabase.from("messages").insert({
+      id,
+      conversation_id: conversationId,
+      sender_id: userId,
+      content,
+    });
 
     setSending(false);
     if (error) {
@@ -253,6 +251,10 @@ export function ChatThread({
         >
           <Send className="size-4" />
         </Button>
+        <p className="px-3 pb-2 text-center text-[11px] text-muted-foreground">
+          Pay only through HubConnect. Payments made outside it aren't
+          protected.
+        </p>
       </form>
     </div>
   );

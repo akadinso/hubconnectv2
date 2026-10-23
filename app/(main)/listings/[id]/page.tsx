@@ -51,7 +51,7 @@ async function ListingContent({ params }: { params: Promise<{ id: string }> }) {
         `id, title, description, image_url, images, price, type, condition, rate_type,
          availability, rating, review_count, created_at, seller_id,
          seller:profiles!seller_id ( id, username, full_name, shop_name, avatar_url, verified, expected_graduation ),
-         category:categories!category_id ( name )`,
+         category:categories!category_id ( name ), campus:campuses!campus_id ( name )`,
       )
       .eq("id", id)
       .maybeSingle(),
@@ -108,6 +108,7 @@ async function ListingContent({ params }: { params: Promise<{ id: string }> }) {
   const days = DAYS.filter((d) =>
     (listing.availability ?? []).includes(d.value),
   );
+  const campus = one<any>(listing.campus);
 
   return (
     <MaxWidthWrapper className="w-full space-y-10 py-8">
@@ -130,6 +131,7 @@ async function ListingContent({ params }: { params: Promise<{ id: string }> }) {
             >
               {listing.type}
             </Badge>
+            {campus?.name && <Badge variant="outline">{campus.name}</Badge>}
             {category?.name && <Badge variant="outline">{category.name}</Badge>}
             {!isService && conditionLabel(listing.condition) && (
               <Badge variant="outline">

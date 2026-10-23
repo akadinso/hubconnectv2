@@ -53,8 +53,8 @@ async function OrderContent({ params }: { params: Promise<{ id: string }> }) {
   const { data: item } = await supabase
     .from("order_items")
     .select(
-      `id, title, unit_price, quantity, status, listing_id, seller_id, released_at,
-       listing:listings!listing_id ( image_url ),
+      `id, title, unit_price, quantity, status, listing_id, seller_id, released_at, seller_fee,
+       listing:listings!listing_id ( image_url ), campus:campuses!campus_id ( name ), 
        seller:profiles!seller_id ( username, full_name, shop_name ),
        order:orders!inner (
          id, buyer_id, total, paid_at, created_at, delivery_method, payment_status,
@@ -104,6 +104,7 @@ async function OrderContent({ params }: { params: Promise<{ id: string }> }) {
   const dispute = disputes?.[0] ?? null;
   const paused = open && !!dispute;
   const campus = order.delivery_method !== "courier";
+const campusName = one<any>(item.campus)?.name as string | undefined;
 
   const steps: TimelineStep[] = [
     {
@@ -246,7 +247,15 @@ async function OrderContent({ params }: { params: Promise<{ id: string }> }) {
               </>
             ) : (
               <>
-                <p className="font-semibold">Payment released</p>
+                <p className="text-sm text-muted-foreground">
+                  {rand(
+                    Number(item.unit_price) * item.quantity -
+                      Number(item.seller_fee),
+                  )}{" "}
+                  is now in your wallet (sale{" "}
+                  {rand(Number(item.unit_price) * item.quantity)}, HubConnect
+                  fee {rand(item.seller_fee)}).
+                </p>{" "}
                 <p className="text-sm text-muted-foreground">
                   {rand(Number(item.unit_price) * item.quantity)} is now in your
                   wallet.
@@ -297,6 +306,11 @@ async function OrderContent({ params }: { params: Promise<{ id: string }> }) {
           ) : role === "seller" ? (
             <>
               <p className="font-semibold">Enter the buyer's code</p>
+              <p className="text-xs text-muted-foreground">
+                When it's confirmed, HubConnect takes its seller fee (about{" "}
+                {rand(Number(item.unit_price) * item.quantity * 0.05)}, less if
+                you've reached your monthly cap).
+              </p>
               <p className="text-sm text-muted-foreground">
                 Ask {buyerName} for the 4-digit code once they've checked the
                 item. Entering it releases your payment.
@@ -320,6 +334,15 @@ async function OrderContent({ params }: { params: Promise<{ id: string }> }) {
             <p className="text-sm text-muted-foreground">
               Viewing as an admin. Only the buyer and seller can act on this
               order.
+            </p>
+          )}
+
+          {order.delivery_method && (
+            <p className="text-xs text-muted-foreground">
+              Delivery: {DELIVERY_LABEL[order.delivery_method]}
+              {order.delivery_method === "campus" && campusName
+                ? ` · ${campusName} campus`
+                : ""}
             </p>
           )}
         </aside>

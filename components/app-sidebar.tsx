@@ -33,6 +33,7 @@ import {
   Store,
   FileExclamationPointIcon,
   ShoppingBasket,
+  School,
 } from "lucide-react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
@@ -70,6 +71,11 @@ const data = {
       title: "Seller Applications",
       url: "/admin/seller-applications",
       icon: <ShoppingBasket />,
+    },
+    {
+      title: "Campuses",
+      url: "/admin/campuses",
+      icon: <School />,
     },
   ],
 

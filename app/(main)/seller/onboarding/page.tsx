@@ -8,6 +8,7 @@ import { formatDate } from "@/lib/format";
 import MaxWidthWrapper from "@/components/MaxWidthWrapper";
 import { SellerApplicationForm } from "@/components/SellerApplicationForm";
 import { Button } from "@/components/ui/button";
+import { getFees, sellerFeeSummary } from "@/lib/fees";
 
 export default function SellerOnboardingPage() {
   return (
@@ -52,6 +53,8 @@ async function OnboardingContent() {
     supabase.from("categories").select("id, name").order("name"),
   ]);
 
+  const fees = await getFees(supabase);
+
   // Application waiting for review
   if (latest?.status === "pending") {
     return (
@@ -77,6 +80,9 @@ async function OnboardingContent() {
         <p className="text-sm text-muted-foreground">
           Tell us what you want to sell on HubConnect. The team reviews every
           application before you can post listings.
+        </p>
+        <p className="rounded-lg bg-gold-lite p-3 text-sm text-gold-dark">
+          {sellerFeeSummary(fees)}
         </p>
       </div>
 

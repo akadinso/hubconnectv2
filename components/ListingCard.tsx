@@ -76,6 +76,11 @@ export function ListingCard({ listing }: { listing: Listing }) {
             {listing.subtitle}
           </p>
         )}
+        {listing.campus && (
+          <p className="truncate text-[11px] text-muted-foreground">
+            {listing.campus}
+          </p>
+        )}
       </div>
 
       {/* Seller & Rating Row */}

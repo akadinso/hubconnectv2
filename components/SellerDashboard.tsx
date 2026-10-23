@@ -22,7 +22,7 @@ export function SellerDashboard({
     const { data, error } = await supabase
       .from("listings")
       .select(
-        "id, title, description, price, image_url, images, type, category_id, condition, rate_type, availability, status, created_at",
+        "id, title, description, price, image_url, images, type, category_id, condition, rate_type, availability, status, created_at, campus_id",
       )
       .order("created_at", { ascending: false });
 
@@ -32,7 +32,7 @@ export function SellerDashboard({
     }
 
     if (data) {
-      setListings(data as SellerListing[]);
+      setListings(data);
     }
   };
 

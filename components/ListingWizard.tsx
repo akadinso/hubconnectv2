@@ -46,10 +46,14 @@ type Step = "form" | "preview" | "done";
 
 export function ListingWizard({
   categories,
+  campuses,
+  defaultCampusId,
   seller,
   initial,
 }: {
   categories: { id: string; name: string }[];
+  campuses: { id: string; name: string }[];
+  defaultCampusId?: string | null;
   seller: { name: string; avatarUrl: string | null };
   initial?: SellerListing | null;
 }) {
@@ -74,6 +78,9 @@ export function ListingWizard({
   const [categoryId, setCategoryId] = React.useState(
     initial?.category_id ?? "",
   );
+  const [campusId, setCampusId] = React.useState(
+    initial?.campus_id ?? defaultCampusId ?? "",
+  );
   const [condition, setCondition] = React.useState(initial?.condition ?? "");
   const [rateType, setRateType] = React.useState(
     initial?.rate_type ?? "per_hour",
@@ -94,6 +101,7 @@ export function ListingWizard({
   const categoryName = categories.find((c) => c.id === categoryId)?.name;
 
   function validate(forPublish: boolean) {
+    if (!campusId) return "Choose the campus where buyers can collect this.";
     if (title.trim().length < 3)
       return "Give your listing a title (at least 3 characters).";
     const amount = Number(price);
@@ -168,6 +176,7 @@ export function ListingWizard({
       images: urls,
       image_url: urls[0] ?? null,
       status,
+      campus_id: campusId,
     };
 
     const result = initial
@@ -421,6 +430,26 @@ export function ListingWizard({
                 </option>
               ))}
             </select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="campus">Campus</Label>
+            <select
+              id="campus"
+              value={campusId}
+              onChange={(e) => setCampusId(e.target.value)}
+              className={selectClass}
+            >
+              <option value="">Choose a campus</option>
+              {campuses.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+            <p className="text-xs text-muted-foreground">
+              Where buyers can meet you to collect this.
+            </p>
           </div>
 
           <div className="grid grid-cols-2 gap-4">

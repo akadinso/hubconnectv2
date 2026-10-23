@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { startOfferCheckout } from "../actions";
 import { CheckoutShell } from "@/components/ChekoutShell";
+import { buyerFeeLabel, getBuyerFee, getFees } from "@/lib/fees";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -65,14 +66,16 @@ async function OfferCheckoutContent({
   const sellerName =
     seller?.shop_name || seller?.full_name || seller?.username || "Seller";
   const price = Number(offer.price);
+  const fees = await getFees(supabase);
+  const fee = await getBuyerFee(supabase, price, fees);
 
-const expired =
-  offer.status === "pending" && new Date(offer.expires_at) < new Date();
-const usable =
-  offer.status === "accepted" && new Date(offer.expires_at) > new Date();
-const backHref = `/messages/${offer.conversation_id}`;
+  const expired =
+    offer.status === "pending" && new Date(offer.expires_at) < new Date();
+  const usable =
+    offer.status === "accepted" && new Date(offer.expires_at) > new Date();
+  const backHref = `/messages/${offer.conversation_id}`;
 
-if (offer.status === "pending" && !expired) redirect(backHref);
+  if (offer.status === "pending" && !expired) redirect(backHref);
 
   if (!usable || !listing) {
     return (
@@ -133,9 +136,13 @@ if (offer.status === "pending" && !expired) redirect(backHref);
         <span>Item price</span>
         <span>{rand(price)}</span>
       </div>
+      <div className="flex justify-between text-sm text-muted-foreground">
+        <span>Buyer protection ({buyerFeeLabel(fees)})</span>
+        <span>{rand(fee)}</span>
+      </div>
       <div className="flex justify-between text-lg font-bold">
         <span>Total</span>
-        <span>{rand(price)}</span>
+        <span>{rand(price + fee)}</span>
       </div>
     </div>
   );

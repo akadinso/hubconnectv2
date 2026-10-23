@@ -20,4 +20,5 @@ export type Listing = {
   reviewCount?: number | null;
   createdAt?: string;
   seller?: Seller;
+  campus?: string | null;
 };

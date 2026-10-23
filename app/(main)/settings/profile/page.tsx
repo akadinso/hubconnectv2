@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
+import { CampusSettings } from "@/components/CampusSettings";
 
 import { createClient } from "@/lib/supabase/server";
 import MaxWidthWrapper from "@/components/MaxWidthWrapper";
@@ -31,11 +32,16 @@ async function EditContent() {
   const { data: profile } = await supabase
     .from("profiles")
     .select(
-      "full_name, username, bio, avatar_url, role, shop_name, tagline, shop_tags, expected_graduation",
+      "full_name, username, bio, avatar_url, role, shop_name, tagline, shop_tags, expected_graduation, campus_id",
     )
     .eq("id", user.id)
     .maybeSingle();
 
+  const { data: campuses } = await supabase
+    .from("campuses")
+    .select("id, name")
+    .eq("active", true)
+    .order("name");
   const isSeller = profile?.role === "seller" || profile?.role === "admin";
 
   return (
@@ -51,6 +57,10 @@ async function EditContent() {
             bio: profile?.bio ?? "",
             avatarUrl: profile?.avatar_url ?? null,
           }}
+        />
+        <CampusSettings
+          campuses={campuses ?? []}
+          current={profile?.campus_id ?? ""}
         />
       </div>
 

@@ -53,7 +53,7 @@ async function Status({
   const { data: order } = await supabase
     .from("orders")
     .select(
-      `id, total, payment_status, payment_method, delivery_method,
+      `id, total, payment_status, payment_method, delivery_method,items_total, buyer_fee,
        items:order_items (
          id, title, unit_price, quantity, listing_id,
          listing:listings!listing_id ( image_url ),
@@ -166,6 +166,12 @@ async function Status({
           <div className="flex justify-between">
             <dt className="text-muted-foreground">Total paid</dt>
             <dd className="font-semibold">{rand(order.total)}</dd>
+          </div>
+          <div className="flex justify-between text-xs text-muted-foreground">
+            <dt>
+              Items {rand(order.items_total)} · Buyer protection{" "}
+              {rand(order.buyer_fee)}
+            </dt>
           </div>
           {order.payment_method && (
             <div className="flex justify-between">
