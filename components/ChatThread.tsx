@@ -251,11 +251,10 @@ export function ChatThread({
         >
           <Send className="size-4" />
         </Button>
-        <p className="px-3 pb-2 text-center text-[11px] text-muted-foreground">
-          Pay only through HubConnect. Payments made outside it aren't
-          protected.
-        </p>
       </form>
+      <p className="px-3 pb-2 text-center text-[11px] text-muted-foreground">
+        Pay only through HubConnect. Payments made outside it aren't protected.
+      </p>
     </div>
   );
 }
