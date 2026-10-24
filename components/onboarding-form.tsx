@@ -94,18 +94,17 @@ export function OnboardingForm({
       avatarUrl = `${data.publicUrl}?v=${Date.now()}`;
     }
 
-    const { error: profileError } = await supabase
-      .from("profiles")
-      .update({
+    const { error: profileError } = await supabase.from("profiles").upsert(
+      {
+        id: userId,
         full_name: fullName.trim(),
         username: username.trim().toLowerCase(),
         campus_id: campusId,
         ...(avatarUrl && { avatar_url: avatarUrl }),
         onboarded: true,
-      })
-      .eq("id", userId)
-      .select("id")
-      .single();
+      },
+      { onConflict: "id" },
+    );
 
     if (profileError) {
       setError(
