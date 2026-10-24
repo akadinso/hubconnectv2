@@ -14,10 +14,11 @@ export function MessagesShell({
   const inThread = pathname !== "/messages" && pathname !== "/messages/";
 
   return (
-    <div className="flex h-screen max-w-full overflow-hidden border-x bg-background">
+    // Full screen height minus the 4rem navbar, so the message box is always on screen
+    <div className="flex h-[calc(98dvh-4rem)] w-full max-w-full overflow-hidden border-x bg-background">
       <aside
         className={cn(
-          "w-full shrink-0 flex-col border-r md:flex md:w-80 lg:w-96",
+          "min-h-0 w-full shrink-0 flex-col border-r md:flex md:w-80 lg:w-96",
           inThread ? "hidden" : "flex",
         )}
       >
@@ -25,7 +26,7 @@ export function MessagesShell({
       </aside>
       <section
         className={cn(
-          "min-w-0 flex-1 flex-col md:flex",
+          "min-h-0 min-w-0 flex-1 flex-col md:flex",
           inThread ? "flex" : "hidden",
         )}
       >

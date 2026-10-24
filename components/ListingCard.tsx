@@ -77,9 +77,9 @@ export function ListingCard({ listing }: { listing: Listing }) {
           </p>
         )}
         {listing.campus && (
-          <p className="truncate text-[11px] text-muted-foreground">
+          <Badge className="truncate text-[11px] font-bold bg-gold">
             {listing.campus}
-          </p>
+          </Badge>
         )}
       </div>
 
