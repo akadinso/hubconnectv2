@@ -124,7 +124,7 @@ export function OnboardingForm({
     fullName.trim().length > 1 && username.trim().length > 2 && !!campusId;
 
   return (
-    <Card>
+    <Card className="p-10">
       <CardHeader>
         <CardTitle className="text-2xl">Welcome To HubConnect</CardTitle>
         <CardDescription>Step {step} of 2</CardDescription>

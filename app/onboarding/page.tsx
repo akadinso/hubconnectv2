@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { OnboardingForm } from "@/components/onboarding-form";
+import Image from "next/image";
 
 export default async function OnboardingPage() {
   const supabase = await createClient();
@@ -27,8 +28,14 @@ export default async function OnboardingPage() {
   if (profile?.onboarded && profile?.campus_id) redirect("/");
 
   return (
-    <div className="flex min-h-svh items-center justify-center p-6">
-      <div className="w-full max-w-md">
+    <div className="flex min-h-svh items-center justify-center p-6 bg-gray-100">
+      <div className="w-full max-w-md flex flex-col gap-20 items-center">
+        <Image
+          src={"/logo-dark.png"}
+          alt="HubConnect Logo"
+          width={400}
+          height={300}
+        />
         <OnboardingForm
           userId={user.id}
           defaultName={
