@@ -9,7 +9,7 @@ import {
   createPaginatedRowModel,
   createSortedRowModel,
   FlexRender,
-  globalFilteringFeature, // 1. Import global filtering feature
+  globalFilteringFeature,
   rowPaginationFeature,
   rowSelectionFeature,
   rowSortingFeature,
@@ -68,7 +68,7 @@ export type AdminUser = {
 const features = tableFeatures({
   columnFilteringFeature,
   columnVisibilityFeature,
-  globalFilteringFeature, // 2. Add global filtering feature here
+  globalFilteringFeature,
   rowPaginationFeature,
   rowSelectionFeature,
   rowSortingFeature,
@@ -224,14 +224,12 @@ const columns = columnHelper.columns([
     id: "actions",
     cell: ({ row }) => (
       <DropdownMenu>
-        <DropdownMenuTrigger
-          render={
-            <Button variant="ghost" className="size-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <EllipsisVerticalIcon className="size-4" />
-            </Button>
-          }
-        />
+        <DropdownMenuTrigger>
+          <Button variant="ghost" className="size-8 p-0" type="button">
+            <span className="sr-only">Open menu</span>
+            <EllipsisVerticalIcon className="size-4" />
+          </Button>
+        </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuLabel>Actions</DropdownMenuLabel>
           <DropdownMenuItem
@@ -256,7 +254,7 @@ export function DataTable({ data }: { data: AdminUser[] }) {
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     [],
   );
-  const [globalFilter, setGlobalFilter] = React.useState<string>(""); // 3. State for global filter
+  const [globalFilter, setGlobalFilter] = React.useState<string>("");
   const [columnVisibility, setColumnVisibility] =
     React.useState<ColumnVisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
@@ -274,7 +272,7 @@ export function DataTable({ data }: { data: AdminUser[] }) {
       columnVisibility,
       rowSelection,
       columnFilters,
-      globalFilter, // 4. Pass global filter into table state
+      globalFilter,
       pagination,
     },
     getRowId: (row) => row.id,
@@ -282,10 +280,9 @@ export function DataTable({ data }: { data: AdminUser[] }) {
     onRowSelectionChange: setRowSelection,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
-    onGlobalFilterChange: setGlobalFilter, // 5. Handle global filter changes
+    onGlobalFilterChange: setGlobalFilter,
     onColumnVisibilityChange: setColumnVisibility,
     onPaginationChange: setPagination,
-    // Optional: customize global filter behavior to check fullName, email, and username
     globalFilterFn: (row, columnId, filterValue) => {
       const user = row.original as AdminUser;
       const search = filterValue.toLowerCase();
@@ -305,18 +302,21 @@ export function DataTable({ data }: { data: AdminUser[] }) {
           <Input
             placeholder="Filter users by name, email, username..."
             value={globalFilter ?? ""}
-            onChange={(event) => setGlobalFilter(event.target.value)} // 6. Bind input to global filter setter
+            onChange={(event) => setGlobalFilter(event.target.value)}
             className="pl-9 h-9"
           />
         </div>
         <DropdownMenu>
-          <DropdownMenuTrigger
-            render={
-              <Button variant="outline" size="sm" className="ml-auto">
-                Columns <ChevronDownIcon className="ml-2 size-4" />
-              </Button>
-            }
-          />
+          <DropdownMenuTrigger>
+            <Button
+              variant="outline"
+              size="sm"
+              className="ml-auto"
+              type="button"
+            >
+              Columns <ChevronDownIcon className="ml-2 size-4" />
+            </Button>
+          </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             {table
               .getAllColumns()

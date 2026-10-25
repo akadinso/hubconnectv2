@@ -224,14 +224,12 @@ const columns = columnHelper.columns([
     id: "actions",
     cell: ({ row }) => (
       <DropdownMenu>
-        <DropdownMenuTrigger
-          render={
-            <Button variant="ghost" className="size-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <EllipsisVerticalIcon className="size-4" />
-            </Button>
-          }
-        />
+        <DropdownMenuTrigger>
+          <Button variant="ghost" className="size-8 p-0" type="button">
+            <span className="sr-only">Open menu</span>
+            <EllipsisVerticalIcon className="size-4" />
+          </Button>
+        </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuLabel>Listing Actions</DropdownMenuLabel>
           <DropdownMenuItem
@@ -292,7 +290,7 @@ export function ListingsTable({ data }: { data: AdminListing[] }) {
     onGlobalFilterChange: setGlobalFilter,
     onColumnVisibilityChange: setColumnVisibility,
     onPaginationChange: setPagination,
-    // Distinct listing-focused search logic: filters by Title, Category, and Status only
+    // Listing-specific search logic: filters strictly by Title, Category, and Status
     globalFilterFn: (row, columnId, filterValue) => {
       const listing = row.original as AdminListing;
       const search = filterValue.toLowerCase();
@@ -317,13 +315,16 @@ export function ListingsTable({ data }: { data: AdminListing[] }) {
           />
         </div>
         <DropdownMenu>
-          <DropdownMenuTrigger
-            render={
-              <Button variant="outline" size="sm" className="ml-auto">
-                Columns <ChevronDownIcon className="ml-2 size-4" />
-              </Button>
-            }
-          />
+          <DropdownMenuTrigger>
+            <Button
+              variant="outline"
+              size="sm"
+              className="ml-auto"
+              type="button"
+            >
+              Columns <ChevronDownIcon className="ml-2 size-4" />
+            </Button>
+          </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             {table
               .getAllColumns()
