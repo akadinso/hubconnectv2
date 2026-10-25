@@ -31,6 +31,12 @@ export const Navbar = async () => {
       .select("role, full_name, username, avatar_url")
       .eq("id", user.id)
       .maybeSingle();
+
+    role = (profile?.role as Role | undefined) ?? null;
+    fullName = profile?.full_name ?? null;
+    username = profile?.username ?? null;
+    avatarUrl = profile?.avatar_url ?? null;
+
     if (role === "buyer") {
       const { count } = await supabase
         .from("seller_applications")
@@ -39,10 +45,6 @@ export const Navbar = async () => {
         .eq("status", "pending");
       applicationPending = (count ?? 0) > 0;
     }
-    role = (profile?.role as Role | undefined) ?? null;
-    fullName = profile?.full_name ?? null;
-    username = profile?.username ?? null;
-    avatarUrl = profile?.avatar_url ?? null;
   }
 
   const roleLink =
@@ -73,10 +75,10 @@ export const Navbar = async () => {
     <header className="sticky top-0 z-50 w-full bg-[#11223f] text-white shadow-sm">
       <MaxWidthWrapper className="flex h-16 w-full items-center justify-between gap-4 px-4 sm:h-20">
         {/* Logo & Mobile Menu */}
-        <div className="flex h-full w-full items-center justify-between gap-2 md:w-auto md:justify-start">
+        <div className="flex h-full w-full items-center justify-between gap-2 lg:w-auto lg:justify-start">
           <Link
             href="/"
-            className="flex items-center gap-2 font-semibold tracking-tight text-white shrink-0"
+            className="flex shrink-0 items-center gap-2 font-semibold tracking-tight text-white"
           >
             <Image
               src="/logo.png"
@@ -88,7 +90,8 @@ export const Navbar = async () => {
             />
           </Link>
 
-          <div className="shrink-0 md:hidden">
+          {/* Trigger MobileMenu before desktop viewports (below lg breakpoint) */}
+          <div className="shrink-0 lg:hidden">
             <MobileMenu
               isUser={!!user}
               roleLink={roleLink}
@@ -99,12 +102,12 @@ export const Navbar = async () => {
         </div>
 
         {/* Search Input */}
-        <div className="mx-2 hidden w-full max-w-md shrink md:block lg:mx-8 lg:max-w-xl">
+        <div className="mx-2 hidden w-full max-w-md shrink lg:block lg:mx-8 lg:max-w-xl">
           <SearchComponent />
         </div>
 
-        {/* Navigation Items */}
-        <nav className="hidden shrink-0 items-center gap-4 md:flex lg:gap-6">
+        {/* Desktop Navigation Items */}
+        <nav className="hidden shrink-0 items-center gap-4 lg:flex lg:gap-6">
           <div className="flex items-center gap-2 lg:gap-3">
             <Favourites />
             <Cart />
@@ -174,7 +177,7 @@ export const Navbar = async () => {
                 className={buttonVariants({
                   size: "sm",
                   className:
-                    "bg-amber-400 text-xs text-[#11223f] hover:bg-amber-300 font-semibold",
+                    "bg-amber-400 text-xs font-semibold text-[#11223f] hover:bg-amber-300",
                 })}
               >
                 Register
