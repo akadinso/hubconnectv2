@@ -84,7 +84,12 @@ export function ChatThread({
   other: Party;
   initialMessages: ChatMsg[];
   initialOffers: Record<string, OfferInfo>;
-  offerListings: { id: string; title: string; price: number | null }[];
+  offerListings: {
+    id: string;
+    title: string;
+    price: number | null;
+    image: string | null;
+  }[];
   defaultListingId: string | null;
   openOffer?: boolean;
 }) {

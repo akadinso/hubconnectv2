@@ -82,7 +82,7 @@ async function ConversationContent({
     // the buyer offers on the seller's items
     supabase
       .from("listings")
-      .select("id, title, price")
+      .select("id, title, price, image_url")
       .eq("seller_id", conversation.seller_id)
       .eq("status", "active")
       .order("title"),
@@ -113,6 +113,7 @@ async function ConversationContent({
     id: l.id as string,
     title: l.title as string,
     price: l.price != null ? Number(l.price) : null,
+    image: (l.image_url as string | null) ?? null,
   }));
 
   const listing = one<any>(conversation.listing);
