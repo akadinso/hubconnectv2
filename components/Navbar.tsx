@@ -142,7 +142,7 @@ export const Navbar = async () => {
 
         {/* Phones, tablets and small laptops */}
         <div className="ml-auto flex shrink-0 items-center gap-1 md:ml-0 xl:hidden">
-          {user && <NotificationsBell supabase={supabase} userId={user.id} />}
+          {/*{user && <NotificationsBell supabase={supabase} userId={user.id} />}*/}
           <MobileMenu
             isUser={!!user}
             roleLink={roleLink}
