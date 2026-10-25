@@ -9,7 +9,9 @@ import { createClient } from "@/lib/supabase/server";
 import { UserDialog } from "./UserDialog";
 import { Favourites } from "./Favourite";
 import { MobileMenu } from "./MobileMenu";
-import { NotificationsBell } from "./NotificationsBell";
+{
+  /**import { NotificationsBell } from "./NotificationsBell";*/
+}
 
 type Role = "buyer" | "seller" | "admin";
 
@@ -106,7 +108,7 @@ export const Navbar = async () => {
                   <MessageCircle className="size-5" />
                 </Button>
               </Link>
-              <NotificationsBell supabase={supabase} userId={user.id} />
+              {/*} <NotificationsBell supabase={supabase} userId={user.id} />*/}
               {roleLink && (
                 <Link href={roleLink.href}>
                   <Button
