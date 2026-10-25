@@ -73,12 +73,12 @@ export const Navbar = async () => {
 
   return (
     <header className="sticky top-0 z-50 w-full bg-[#11223f] text-white shadow-sm">
-      <MaxWidthWrapper className="flex h-16 w-full items-center justify-between gap-4 px-4 sm:h-20">
-        {/* Logo & Mobile Menu */}
-        <div className="flex h-full w-full items-center justify-between gap-2 lg:w-auto lg:justify-start">
+      <MaxWidthWrapper className="flex h-16 w-full items-center justify-between gap-3 px-4 sm:h-20 lg:gap-6">
+        {/* Logo & Mobile Menu Toggle */}
+        <div className="flex shrink-0 items-center gap-2">
           <Link
             href="/"
-            className="flex shrink-0 items-center gap-2 font-semibold tracking-tight text-white"
+            className="flex items-center gap-2 font-semibold tracking-tight text-white shrink-0"
           >
             <Image
               src="/logo.png"
@@ -86,12 +86,12 @@ export const Navbar = async () => {
               width={160}
               height={48}
               priority
-              className="h-auto w-32 object-contain sm:w-40"
+              className="h-auto w-28 object-contain sm:w-36 lg:w-40"
             />
           </Link>
 
-          {/* Trigger MobileMenu before desktop viewports (below lg breakpoint) */}
-          <div className="shrink-0 lg:hidden">
+          {/* Mobile menu trigger displays earlier before desktop cramping occurs */}
+          <div className="shrink-0 xl:hidden">
             <MobileMenu
               isUser={!!user}
               roleLink={roleLink}
@@ -101,14 +101,14 @@ export const Navbar = async () => {
           </div>
         </div>
 
-        {/* Search Input */}
-        <div className="mx-2 hidden w-full max-w-md shrink lg:block lg:mx-8 lg:max-w-xl">
+        {/* Fluid Flexible Search Input (Prevents crowding) */}
+        <div className="hidden min-w-0 flex-1 max-w-xl mx-2 xl:block">
           <SearchComponent />
         </div>
 
         {/* Desktop Navigation Items */}
-        <nav className="hidden shrink-0 items-center gap-4 lg:flex lg:gap-6">
-          <div className="flex items-center gap-2 lg:gap-3">
+        <nav className="hidden shrink-0 items-center gap-3 xl:flex lg:gap-4">
+          <div className="flex items-center gap-2">
             <Favourites />
             <Cart />
           </div>
@@ -131,13 +131,13 @@ export const Navbar = async () => {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="text-white hover:bg-white/10 hover:text-white"
+                  className="text-white hover:bg-white/10 hover:text-white size-9"
                 >
                   <MessageCircle className="size-5" />
                 </Button>
               </Link>
               <Link href={sellHref}>
-                <Button className="bg-gold text-navy hover:bg-gold/90">
+                <Button className="bg-gold text-navy hover:bg-gold/90 text-xs sm:text-sm">
                   + Sell something
                 </Button>
               </Link>
