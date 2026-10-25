@@ -34,6 +34,9 @@ import {
   FileExclamationPointIcon,
   ShoppingBasket,
   School,
+  ChartLineIcon,
+  Currency,
+  NotebookIcon,
 } from "lucide-react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
@@ -76,6 +79,26 @@ const data = {
       title: "Campuses",
       url: "/admin/campuses",
       icon: <School />,
+    },
+    {
+      title: "Leaderboard",
+      url: "/admin/leaderboard",
+      icon: <ChartLineIcon />,
+    },
+    {
+      title: "Payouts",
+      url: "/admin/payouts",
+      icon: <Currency />,
+    },
+    {
+      title: "Revenue",
+      url: "/admin/revenue",
+      icon: <NotebookIcon />,
+    },
+    {
+      title: "Weekly Info",
+      url: "/admin/weekly",
+      icon: <NotebookIcon />,
     },
   ],
 
