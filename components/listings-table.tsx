@@ -292,15 +292,14 @@ export function ListingsTable({ data }: { data: AdminListing[] }) {
     onGlobalFilterChange: setGlobalFilter,
     onColumnVisibilityChange: setColumnVisibility,
     onPaginationChange: setPagination,
+    // Distinct listing-focused search logic: filters by Title, Category, and Status only
     globalFilterFn: (row, columnId, filterValue) => {
       const listing = row.original as AdminListing;
       const search = filterValue.toLowerCase();
       return (
         listing.title.toLowerCase().includes(search) ||
         listing.category.toLowerCase().includes(search) ||
-        listing.seller?.fullName?.toLowerCase().includes(search) ||
-        listing.seller?.email?.toLowerCase().includes(search) ||
-        listing.seller?.username?.toLowerCase().includes(search)
+        listing.status.toLowerCase().includes(search)
       );
     },
   });
@@ -311,7 +310,7 @@ export function ListingsTable({ data }: { data: AdminListing[] }) {
         <div className="relative flex-1 max-w-sm">
           <SearchIcon className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
           <Input
-            placeholder="Filter listings, categories, sellers..."
+            placeholder="Search listings by title, category, status..."
             value={globalFilter ?? ""}
             onChange={(event) => setGlobalFilter(event.target.value)}
             className="pl-9 h-9"
