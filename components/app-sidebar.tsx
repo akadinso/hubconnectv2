@@ -37,6 +37,7 @@ import {
   ChartLineIcon,
   Currency,
   NotebookIcon,
+  Calendar,
 } from "lucide-react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
@@ -98,7 +99,7 @@ const data = {
     {
       title: "Weekly Info",
       url: "/admin/weekly",
-      icon: <NotebookIcon />,
+      icon: <Calendar />,
     },
   ],
 
