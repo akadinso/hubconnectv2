@@ -73,9 +73,9 @@ export const Navbar = async () => {
 
   return (
     <header className="sticky top-0 z-50 w-full bg-[#11223f] text-white shadow-sm">
-      <MaxWidthWrapper className="flex h-16 w-full items-center justify-between gap-3 px-4 sm:h-20 lg:gap-6">
-        {/* Logo & Mobile Menu Toggle */}
-        <div className="flex shrink-0 items-center gap-2">
+      <MaxWidthWrapper className="flex h-16 w-full items-center justify-between gap-3 px-4 sm:h-20 xl:gap-6">
+        {/* Logo on the left */}
+        <div className="flex shrink-0 items-center">
           <Link
             href="/"
             className="flex items-center gap-2 font-semibold tracking-tight text-white shrink-0"
@@ -89,21 +89,21 @@ export const Navbar = async () => {
               className="h-auto w-28 object-contain sm:w-36 lg:w-40"
             />
           </Link>
-
-          {/* Mobile menu trigger displays earlier before desktop cramping occurs */}
-          <div className="shrink-0 xl:hidden">
-            <MobileMenu
-              isUser={!!user}
-              roleLink={roleLink}
-              sellHref={sellHref}
-              userSlot={userDialog}
-            />
-          </div>
         </div>
 
-        {/* Fluid Flexible Search Input (Prevents crowding) */}
+        {/* Fluid Flexible Search Input (Hidden on mobile/tablet viewports) */}
         <div className="hidden min-w-0 flex-1 max-w-xl mx-2 xl:block">
           <SearchComponent />
+        </div>
+
+        {/* Mobile Menu Toggle pinned to the extreme right (the end) */}
+        <div className="shrink-0 xl:hidden">
+          <MobileMenu
+            isUser={!!user}
+            roleLink={roleLink}
+            sellHref={sellHref}
+            userSlot={userDialog}
+          />
         </div>
 
         {/* Desktop Navigation Items */}
