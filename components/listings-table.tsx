@@ -9,6 +9,7 @@ import {
   createPaginatedRowModel,
   createSortedRowModel,
   FlexRender,
+  globalFilteringFeature,
   rowPaginationFeature,
   rowSelectionFeature,
   rowSortingFeature,
@@ -68,6 +69,7 @@ export type AdminListing = {
 const features = tableFeatures({
   columnFilteringFeature,
   columnVisibilityFeature,
+  globalFilteringFeature,
   rowPaginationFeature,
   rowSelectionFeature,
   rowSortingFeature,
@@ -150,8 +152,10 @@ const columns = columnHelper.columns([
             <span className="font-medium text-xs leading-none">
               {seller.fullName}
             </span>
-            <span className="text-[11px] text-muted-foreground mt-0.5">
-              @{seller.username} • {seller.email}
+            <span className="text-[11px] text-muted-foreground mt-0.5 flex items-center gap-1.5">
+              <span>@{seller.username}</span>
+              <span>·</span>
+              <span>{seller.email}</span>
             </span>
           </div>
         </div>
@@ -259,6 +263,7 @@ export function ListingsTable({ data }: { data: AdminListing[] }) {
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     [],
   );
+  const [globalFilter, setGlobalFilter] = React.useState<string>("");
   const [columnVisibility, setColumnVisibility] =
     React.useState<ColumnVisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
@@ -276,6 +281,7 @@ export function ListingsTable({ data }: { data: AdminListing[] }) {
       columnVisibility,
       rowSelection,
       columnFilters,
+      globalFilter,
       pagination,
     },
     getRowId: (row) => row.id,
@@ -283,8 +289,20 @@ export function ListingsTable({ data }: { data: AdminListing[] }) {
     onRowSelectionChange: setRowSelection,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
+    onGlobalFilterChange: setGlobalFilter,
     onColumnVisibilityChange: setColumnVisibility,
     onPaginationChange: setPagination,
+    globalFilterFn: (row, columnId, filterValue) => {
+      const listing = row.original as AdminListing;
+      const search = filterValue.toLowerCase();
+      return (
+        listing.title.toLowerCase().includes(search) ||
+        listing.category.toLowerCase().includes(search) ||
+        listing.seller?.fullName?.toLowerCase().includes(search) ||
+        listing.seller?.email?.toLowerCase().includes(search) ||
+        listing.seller?.username?.toLowerCase().includes(search)
+      );
+    },
   });
 
   return (
@@ -293,11 +311,9 @@ export function ListingsTable({ data }: { data: AdminListing[] }) {
         <div className="relative flex-1 max-w-sm">
           <SearchIcon className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
           <Input
-            placeholder="Filter by listing title..."
-            value={(table.getColumn("title")?.getFilterValue() as string) ?? ""}
-            onChange={(event) =>
-              table.getColumn("title")?.setFilterValue(event.target.value)
-            }
+            placeholder="Filter listings, categories, sellers..."
+            value={globalFilter ?? ""}
+            onChange={(event) => setGlobalFilter(event.target.value)}
             className="pl-9 h-9"
           />
         </div>
