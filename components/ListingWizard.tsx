@@ -247,7 +247,7 @@ export function ListingWizard({
   /* ---------- Published ---------- */
   if (step === "done") {
     return (
-      <div className="mx-auto max-w-sm space-y-6 rounded-2xl bg-muted-foreground p-8 text-center">
+      <div className="mx-auto max-w-sm h-full items-center space-y-6 rounded-2xl bg-gray-300 p-8 text-center">
         <CheckCircle2 className="mx-auto size-12 text-success" />
         <div className="space-y-1">
           <h1 className="text-xl font-bold">
@@ -257,7 +257,7 @@ export function ListingWizard({
                 ? "Listing updated"
                 : "Your listing is live"}
           </h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-black">
             {archived
               ? "This listing is archived, so buyers can't see it yet."
               : "Students can now find and message you about it."}
