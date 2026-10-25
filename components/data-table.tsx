@@ -9,6 +9,7 @@ import {
   createPaginatedRowModel,
   createSortedRowModel,
   FlexRender,
+  globalFilteringFeature, // 1. Import global filtering feature
   rowPaginationFeature,
   rowSelectionFeature,
   rowSortingFeature,
@@ -67,6 +68,7 @@ export type AdminUser = {
 const features = tableFeatures({
   columnFilteringFeature,
   columnVisibilityFeature,
+  globalFilteringFeature, // 2. Add global filtering feature here
   rowPaginationFeature,
   rowSelectionFeature,
   rowSortingFeature,
@@ -254,6 +256,7 @@ export function DataTable({ data }: { data: AdminUser[] }) {
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     [],
   );
+  const [globalFilter, setGlobalFilter] = React.useState<string>(""); // 3. State for global filter
   const [columnVisibility, setColumnVisibility] =
     React.useState<ColumnVisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
@@ -271,6 +274,7 @@ export function DataTable({ data }: { data: AdminUser[] }) {
       columnVisibility,
       rowSelection,
       columnFilters,
+      globalFilter, // 4. Pass global filter into table state
       pagination,
     },
     getRowId: (row) => row.id,
@@ -278,8 +282,19 @@ export function DataTable({ data }: { data: AdminUser[] }) {
     onRowSelectionChange: setRowSelection,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
+    onGlobalFilterChange: setGlobalFilter, // 5. Handle global filter changes
     onColumnVisibilityChange: setColumnVisibility,
     onPaginationChange: setPagination,
+    // Optional: customize global filter behavior to check fullName, email, and username
+    globalFilterFn: (row, columnId, filterValue) => {
+      const user = row.original as AdminUser;
+      const search = filterValue.toLowerCase();
+      return (
+        user.fullName.toLowerCase().includes(search) ||
+        user.email.toLowerCase().includes(search) ||
+        user.username.toLowerCase().includes(search)
+      );
+    },
   });
 
   return (
@@ -288,13 +303,9 @@ export function DataTable({ data }: { data: AdminUser[] }) {
         <div className="relative flex-1 max-w-sm">
           <SearchIcon className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
           <Input
-            placeholder="Filter users..."
-            value={
-              (table.getColumn("fullName")?.getFilterValue() as string) ?? ""
-            }
-            onChange={(event) =>
-              table.getColumn("fullName")?.setFilterValue(event.target.value)
-            }
+            placeholder="Filter users by name, email, username..."
+            value={globalFilter ?? ""}
+            onChange={(event) => setGlobalFilter(event.target.value)} // 6. Bind input to global filter setter
             className="pl-9 h-9"
           />
         </div>
