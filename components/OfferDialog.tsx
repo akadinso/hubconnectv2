@@ -15,35 +15,61 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { sendOffer } from "@/app/(main)/messages/actions";
+import { rand } from "@/lib/format";
+import { sendBuyerOffer, sendOffer } from "@/app/(main)/messages/actions";
 
 const selectClass =
   "h-9 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring/50";
 
 export function OfferDialog({
+  role,
   conversationId,
   listings,
   defaultListingId,
+  defaultOpen = false,
 }: {
+  role: "buyer" | "seller";
   conversationId: string;
-  listings: { id: string; title: string }[];
+  listings: { id: string; title: string; price: number | null }[];
   defaultListingId: string | null;
+  defaultOpen?: boolean;
 }) {
-  const [open, setOpen] = React.useState(false);
+  const isBuyer = role === "buyer";
+  const [open, setOpen] = React.useState(defaultOpen);
   const [listingId, setListingId] = React.useState(
     defaultListingId && listings.some((l) => l.id === defaultListingId)
       ? defaultListingId
       : (listings[0]?.id ?? ""),
   );
   const [price, setPrice] = React.useState("");
+  const [error, setError] = React.useState<string | null>(null);
   const [pending, startTransition] = React.useTransition();
+
+  const listing = listings.find((l) => l.id === listingId);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    setError(null);
+
+    const amount = Number(price);
+    if (!Number.isFinite(amount) || amount <= 0) {
+      setError("Enter a valid price.");
+      return;
+    }
+    if (isBuyer && listing?.price != null && amount >= listing.price) {
+      setError(
+        `Offer less than the listed price (${rand(listing.price)}), or check out at the listed price.`,
+      );
+      return;
+    }
+
     startTransition(async () => {
-      const result = await sendOffer(conversationId, listingId, Number(price));
+      const result = isBuyer
+        ? await sendBuyerOffer(conversationId, listingId, amount)
+        : await sendOffer(conversationId, listingId, amount);
+
       if (result.error) {
-        toast.error(result.error);
+        setError(result.error);
         return;
       }
       toast.success("Offer sent");
@@ -59,10 +85,11 @@ export function OfferDialog({
           <Button
             type="button"
             variant="outline"
-            size="icon"
-            aria-label="Make an offer"
+            size="sm"
+            className="shrink-0 gap-1"
           >
             <Tag className="size-4" />
+            Offer
           </Button>
         }
       />
@@ -70,14 +97,17 @@ export function OfferDialog({
         <DialogHeader>
           <DialogTitle>Make an offer</DialogTitle>
           <DialogDescription>
-            Agree a price with the buyer. They can accept or decline in the
-            chat.
+            {isBuyer
+              ? "Suggest a price. The seller can accept or decline in the chat."
+              : "Agree a price with the buyer. They can accept or decline in the chat."}
           </DialogDescription>
         </DialogHeader>
 
         {listings.length === 0 ? (
           <p className="text-sm text-muted-foreground">
-            You need an active listing to send an offer.
+            {isBuyer
+              ? "This seller has no active listings right now."
+              : "You need an active listing to send an offer."}
           </p>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -95,10 +125,17 @@ export function OfferDialog({
                   </option>
                 ))}
               </select>
+              {listing?.price != null && (
+                <p className="text-xs text-muted-foreground">
+                  Listed price: {rand(listing.price)}
+                </p>
+              )}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="offer-price">Agreed price (R)</Label>
+              <Label htmlFor="offer-price">
+                {isBuyer ? "Your offer (R)" : "Agreed price (R)"}
+              </Label>
               <Input
                 id="offer-price"
                 type="number"
@@ -110,6 +147,8 @@ export function OfferDialog({
                 required
               />
             </div>
+
+            {error && <p className="text-sm text-destructive">{error}</p>}
 
             <Button type="submit" className="w-full" disabled={pending}>
               {pending ? "Sending..." : "Send offer"}

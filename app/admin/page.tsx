@@ -79,9 +79,9 @@ async function AdminContent() {
     openReports,
     openDisputes,
     paidOrders,
-    paidRows,
     reportRows,
     disputeRows,
+    revenueRes,
   ] = await Promise.all([
     service
       .from("profiles")
@@ -125,6 +125,9 @@ async function AdminContent() {
       .in("status", ["open", "in_review"])
       .order("created_at", { ascending: false })
       .limit(8),
+    supabase
+      .from("platform_revenue")
+      .select("sales_volume, buyer_fees, seller_fees"),
   ]);
 
   if (profilesResult.error) {
@@ -194,16 +197,26 @@ async function AdminContent() {
     };
   });
 
-  const revenue = (paidRows.data ?? []).reduce(
-    (sum, row) => sum + Number(row.total),
+  const rev = (revenueRes.data ?? []) as any[];
+  const salesVolume = rev.reduce((s, r) => s + Number(r.sales_volume), 0);
+  const platformFees = rev.reduce(
+    (s, r) => s + Number(r.buyer_fees) + Number(r.seller_fees),
     0,
   );
+
+  <SectionCards
+    users={users}
+    totalListings={listings.length}
+    salesVolume={salesVolume}
+    platformFees={platformFees}
+    paidOrders={paidOrders}
+  />;
 
   const activity = [
     { label: "Open reports", value: openReports },
     { label: "Open disputes", value: openDisputes },
     { label: "Paid orders", value: paidOrders },
-    { label: "Revenue", value: rand(revenue) },
+    { label: "Revenue", value: rand(salesVolume) },
   ];
 
   const reports = (reportRows.data ?? []) as any[];
@@ -215,8 +228,13 @@ async function AdminContent() {
         <div className="@container/main flex flex-1 flex-col gap-2">
           <div className="flex flex-col gap-6 py-4 md:py-6">
             {/* Top summary metrics */}
-            <SectionCards users={users} totalListings={listings.length} />
-
+            <SectionCards
+              users={users}
+              totalListings={listings.length}
+              salesVolume={salesVolume}
+              platformFees={platformFees}
+              paidOrders={paidOrders}
+            />
             {/* Orders and moderation numbers */}
             <div className="grid grid-cols-2 gap-4 px-4 lg:grid-cols-4 lg:px-6">
               {activity.map((item) => (

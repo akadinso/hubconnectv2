@@ -14,8 +14,10 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export default function ConversationPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ offer?: string }>;
 }) {
   return (
     <Suspense
@@ -23,17 +25,20 @@ export default function ConversationPage({
         <div className="p-6 text-sm text-muted-foreground">Loading chat…</div>
       }
     >
-      <ConversationContent params={params} />
+      <ConversationContent params={params} searchParams={searchParams} />
     </Suspense>
   );
 }
 
 async function ConversationContent({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ offer?: string }>;
 }) {
   const { id } = await params;
+  const sp = await searchParams;
   if (!UUID.test(id)) notFound();
 
   const supabase = await createClient();
@@ -60,7 +65,7 @@ async function ConversationContent({
     { data: profiles },
     { data: msgRows },
     { data: offerRows },
-    { data: myListings },
+    { data: sellerListings },
   ] = await Promise.all([
     supabase
       .from("profiles")
@@ -76,8 +81,8 @@ async function ConversationContent({
     role === "seller"
       ? supabase
           .from("listings")
-          .select("id, title")
-          .eq("seller_id", user.id)
+          .select("id, title, price")
+          .eq("seller_id", conversation.seller_id)
           .eq("status", "active")
           .order("title")
       : Promise.resolve({ data: [] as any[] }),
@@ -105,6 +110,11 @@ async function ConversationContent({
   for (const row of offerRows ?? []) offers[row.id] = toOfferInfo(row);
 
   const listing = one<any>(conversation.listing);
+  const offerListings = (sellerListings ?? []).map((l: any) => ({
+    id: l.id as string,
+    title: l.title as string,
+    price: l.price != null ? Number(l.price) : null,
+  }));
 
   return (
     <>
@@ -146,11 +156,9 @@ async function ConversationContent({
         other={other}
         initialMessages={messages}
         initialOffers={offers}
-        myListings={(myListings ?? []).map((l: any) => ({
-          id: l.id,
-          title: l.title,
-        }))}
+        offerListings={offerListings}
         defaultListingId={conversation.listing_id}
+        openOffer={sp.offer === "1"}
       />
     </>
   );

@@ -10,16 +10,22 @@ import {
   markPayoutPaid,
 } from "@/app/admin/payouts/actions";
 
-export function CreatePayoutsButton() {
+export function CreatePayoutsButton({
+  weekStart,
+  disabled,
+}: {
+  weekStart: string;
+  disabled?: boolean;
+}) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
 
   return (
     <Button
-      disabled={pending}
+      disabled={pending || disabled}
       onClick={() =>
         startTransition(async () => {
-          const result = await createWeeklyPayouts();
+          const result = await createWeeklyPayouts(weekStart);
           if (result.error) {
             toast.error(result.error);
             return;
@@ -27,13 +33,13 @@ export function CreatePayoutsButton() {
           toast.success(
             result.created
               ? `${result.created} payout(s) created`
-              : "Nobody has anything to pay out",
+              : "Nothing new to pay out for this week",
           );
           router.refresh();
         })
       }
     >
-      {pending ? "Working..." : "Create this week's payouts"}
+      {pending ? "Working..." : "Create payouts for this week"}
     </Button>
   );
 }

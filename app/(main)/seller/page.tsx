@@ -13,6 +13,7 @@ import type { SellerListing } from "@/types/seller-listings";
 import { Card, CardContent } from "@/components/ui/card";
 import Link from "next/link";
 import { getFees, pct } from "@/lib/fees";
+import { weekLabel } from "@/lib/weeks";
 
 export default function SellerPage() {
   return (
@@ -44,35 +45,42 @@ async function SellerContent() {
 
   if (profile?.role !== "seller" && profile?.role !== "admin") redirect("/");
 
-  const [walletRes, payoutsRes, salesRes, listingsRes] = await Promise.all([
-    supabase.rpc("seller_wallet"),
-    supabase
-      .from("payouts")
-      .select("id, amount, status, created_at")
-      .eq("seller_id", user.id)
-      .order("created_at", { ascending: false })
-      .limit(10),
-    supabase
-      .from("order_items")
-      .select(
-        `id, title, unit_price, quantity, status, funds_status, listing_id,
+  const [walletRes, payoutsRes, salesRes, listingsRes, weeksRes] =
+    await Promise.all([
+      supabase.rpc("seller_wallet"),
+      supabase
+        .from("payouts")
+        .select("id, amount, status, created_at")
+        .eq("seller_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(10),
+      supabase
+        .from("order_items")
+        .select(
+          `id, title, unit_price, quantity, status, funds_status, listing_id,
          order:orders!inner (
            id, created_at, payment_status,
            buyer:profiles!buyer_id ( username, full_name )
          )`,
-      )
-      .eq("seller_id", user.id)
-      .eq("order.payment_status", "paid")
-      .order("created_at", { ascending: false })
-      .limit(50),
-    supabase
-      .from("listings")
-      .select(
-        "id, title, description, price, image_url, images, type, category_id, condition, rate_type, availability, status",
-      )
-      .eq("seller_id", user.id)
-      .order("created_at", { ascending: false }),
-  ]);
+        )
+        .eq("seller_id", user.id)
+        .eq("order.payment_status", "paid")
+        .order("created_at", { ascending: false })
+        .limit(50),
+      supabase
+        .from("listings")
+        .select(
+          "id, title, description, price, image_url, images, type, category_id, condition, rate_type, availability, status",
+        )
+        .eq("seller_id", user.id)
+        .order("created_at", { ascending: false }),
+      supabase
+        .from("weekly_seller_revenue")
+        .select("week_start, gross, fee, net, items_sold")
+        .eq("seller_id", user.id)
+        .order("week_start", { ascending: false })
+        .limit(8),
+    ]);
 
   const w: any = Array.isArray(walletRes.data)
     ? walletRes.data[0]
@@ -180,6 +188,33 @@ async function SellerContent() {
           </ul>
         )}
       </section>
+
+      {(weeksRes.data ?? []).length > 0 && (
+        <div className="overflow-hidden rounded-xl border">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b bg-muted/50 text-left text-xs text-muted-foreground">
+                <th className="p-3 font-normal">Week</th>
+                <th className="p-3 text-right font-normal">Sales</th>
+                <th className="p-3 text-right font-normal">Fee</th>
+                <th className="p-3 text-right font-normal">You get</th>
+              </tr>
+            </thead>
+            <tbody>
+              {(weeksRes.data as any[]).map((w) => (
+                <tr key={w.week_start} className="border-b last:border-0">
+                  <td className="p-3">{weekLabel(w.week_start)}</td>
+                  <td className="p-3 text-right">{rand(w.gross)}</td>
+                  <td className="p-3 text-right text-muted-foreground">
+                    {rand(w.fee)}
+                  </td>
+                  <td className="p-3 text-right font-medium">{rand(w.net)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       {/* Listings: the component draws its own heading and "New listing" button */}
       <SellerListings listings={listings} />

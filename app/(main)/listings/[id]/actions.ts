@@ -6,7 +6,7 @@ import { revalidatePath } from "next/cache";
 import { cleanPhotoPaths } from "@/lib/photos";
 import { createClient } from "@/lib/supabase/server";
 
-export async function startConversation(listingId: string) {
+async function findOrCreateConversation(listingId: string): Promise<string> {
   const supabase = await createClient();
 
   const {
@@ -24,32 +24,30 @@ export async function startConversation(listingId: string) {
     redirect(`/listings/${listingId}`);
   }
 
-  // Reuse the conversation if this buyer already started one for this listing
   const { data: existing } = await supabase
     .from("conversations")
     .select("id")
     .eq("listing_id", listingId)
     .eq("buyer_id", user.id)
     .maybeSingle();
+  if (existing?.id) return existing.id as string;
 
-  let conversationId = existing?.id as string | undefined;
+  const { data: created, error } = await supabase
+    .from("conversations")
+    .insert({ listing_id: listingId, buyer_id: user.id, seller_id: listing.seller_id })
+    .select("id")
+    .single();
+  if (error) throw new Error(error.message);
 
-  if (!conversationId) {
-    const { data: created, error } = await supabase
-      .from("conversations")
-      .insert({
-        listing_id: listingId,
-        buyer_id: user.id,
-        seller_id: listing.seller_id,
-      })
-      .select("id")
-      .single();
+  return created.id as string;
+}
 
-    if (error) throw new Error(error.message);
-    conversationId = created.id;
-  }
+export async function startConversation(listingId: string) {
+  redirect(`/messages/${await findOrCreateConversation(listingId)}`);
+}
 
-  redirect(`/messages/${conversationId}`);
+export async function startOfferConversation(listingId: string) {
+  redirect(`/messages/${await findOrCreateConversation(listingId)}?offer=1`);
 }
 
 export async function submitReview(

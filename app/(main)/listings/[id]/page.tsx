@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { ArrowLeft, BadgeCheck, Flag, MessageCircle, Star } from "lucide-react";
+import { ArrowLeft, BadgeCheck, Flag, MessageCircle, Star, Tag } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/server";
 import { initialsOf, one } from "@/lib/format";
@@ -22,7 +22,7 @@ import { ListingGallery } from "@/components/ListingGallery";
 import { ReviewForm } from "@/components/ReviewForm";
 import { PhotoGrid } from "@/components/PhotoGrid";
 import { ReportDialog } from "@/components/ReportDialog";
-import { startConversation } from "./actions";
+import { startConversation, startOfferConversation } from "./actions";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -240,6 +240,16 @@ async function ListingContent({ params }: { params: Promise<{ id: string }> }) {
               </form>
               <p className="text-xs text-muted-foreground">
                 Want a different price? Message the seller to make an offer.
+              </p>
+              <form action={startOfferConversation.bind(null, listing.id)}>
+                <Button variant="outline" className="w-full" type="submit">
+                  <Tag />
+                  Make an offer
+                </Button>
+              </form>
+              <p className="text-xs text-muted-foreground">
+                Want a different price? Make an offer and the seller can accept
+                or decline.
               </p>
               <div className="flex gap-2">
                 <ReportDialog

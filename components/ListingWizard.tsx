@@ -247,7 +247,7 @@ export function ListingWizard({
   /* ---------- Published ---------- */
   if (step === "done") {
     return (
-      <div className="mx-auto max-w-sm space-y-6 rounded-2xl border p-8 text-center">
+      <div className="mx-auto max-w-sm space-y-6 rounded-2xl bg-muted-foreground p-8 text-center">
         <CheckCircle2 className="mx-auto size-12 text-success" />
         <div className="space-y-1">
           <h1 className="text-xl font-bold">
@@ -290,7 +290,7 @@ export function ListingWizard({
         </div>
 
         <div className="space-y-3 rounded-2xl border p-4 shadow-sm">
-          <div className="aspect-[4/3] overflow-hidden rounded-xl bg-muted">
+          <div className="aspect-4/3 overflow-hidden rounded-xl bg-muted">
             {cover && (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={cover} alt={title} className="size-full object-cover" />

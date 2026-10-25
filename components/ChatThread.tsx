@@ -72,8 +72,9 @@ export function ChatThread({
   other,
   initialMessages,
   initialOffers,
-  myListings,
+  offerListings,
   defaultListingId,
+  openOffer = false,
 }: {
   conversationId: string;
   userId: string;
@@ -83,8 +84,9 @@ export function ChatThread({
   other: Party;
   initialMessages: ChatMsg[];
   initialOffers: Record<string, OfferInfo>;
-  myListings: { id: string; title: string }[];
+  offerListings: { id: string; title: string; price: number | null }[];
   defaultListingId: string | null;
+  openOffer?: boolean;
 }) {
   const supabase = React.useMemo(() => createClient(), []);
   const [messages, setMessages] = React.useState<ChatMsg[]>(initialMessages);
@@ -227,13 +229,13 @@ export function ChatThread({
       </div>
 
       <form onSubmit={send} className="flex items-center gap-2 border-t p-3">
-        {role === "seller" && (
-          <OfferDialog
-            conversationId={conversationId}
-            listings={myListings}
-            defaultListingId={defaultListingId}
-          />
-        )}
+        <OfferDialog
+          role={role}
+          conversationId={conversationId}
+          listings={offerListings}
+          defaultListingId={defaultListingId}
+          defaultOpen={openOffer}
+        />
         <Input
           value={text}
           onChange={(e) => setText(e.target.value)}

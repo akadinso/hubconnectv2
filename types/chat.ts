@@ -17,4 +17,5 @@ export type OfferInfo = {
   acceptedAt: string | null;
   orderId: string | null;
   listingTitle: string;
+  proposedBy: "buyer" | "seller";
 };

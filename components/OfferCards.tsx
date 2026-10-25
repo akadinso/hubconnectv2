@@ -50,6 +50,8 @@ export function OfferCard({
   const expired =
     o.status === "pending" && new Date(o.expiresAt).getTime() < Date.now();
   const state = expired ? "expired" : o.status;
+  const fromMe = o.proposedBy === role; // I made this offer
+  const other = role === "buyer" ? "seller" : "buyer";
 
   async function run(fn: () => Promise<{ error?: string }>, success?: string) {
     setBusy(true);
@@ -67,15 +69,20 @@ export function OfferCard({
     <div className="w-56 overflow-hidden rounded-xl border bg-card">
       <div className="space-y-0.5 p-3">
         <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-          Offer
+          {o.proposedBy === "buyer" ? "Buyer's offer" : "Seller's offer"}
         </p>
         <p className="text-2xl font-bold">{rand(o.price)}</p>
         <p className="truncate text-xs text-muted-foreground">
           {o.listingTitle}
         </p>
+        {o.listedPrice != null && o.listedPrice > o.price && (
+          <p className="text-[11px] text-muted-foreground">
+            Listed at {rand(o.listedPrice)}
+          </p>
+        )}
       </div>
 
-      {state === "pending" && role === "buyer" && (
+      {state === "pending" && !fromMe && (
         <div className="grid grid-cols-2 border-t">
           <Button
             className="rounded-none"
@@ -83,7 +90,9 @@ export function OfferCard({
             onClick={() =>
               run(
                 () => acceptOffer(o.id),
-                "Offer accepted. Your invoice is ready.",
+                role === "buyer"
+                  ? "Offer accepted. Your invoice is ready."
+                  : "Offer accepted. The buyer can now check out.",
               )
             }
           >
@@ -100,10 +109,10 @@ export function OfferCard({
         </div>
       )}
 
-      {state === "pending" && role === "seller" && (
+      {state === "pending" && fromMe && (
         <div className="flex items-center justify-between gap-2 border-t p-2">
           <span className="text-xs text-muted-foreground">
-            Waiting for the buyer
+            Waiting for the {other}
           </span>
           <Button
             size="sm"

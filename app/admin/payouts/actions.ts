@@ -3,12 +3,17 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 
-export async function createWeeklyPayouts(): Promise<{ error?: string; created?: number }> {
+export async function createWeeklyPayouts(
+  weekStart: string,
+): Promise<{ error?: string; created?: number }> {
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc("create_weekly_payouts");
+  const { data, error } = await supabase.rpc("create_weekly_payouts", {
+    week_start: weekStart,
+  });
   if (error) return { error: error.message };
 
   revalidatePath("/admin/payouts");
+  revalidatePath("/admin/weekly");
   return { created: Number(data ?? 0) };
 }
 

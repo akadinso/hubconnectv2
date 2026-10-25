@@ -2,7 +2,7 @@ import { one } from "@/lib/format";
 import type { ChatMsg, OfferInfo } from "@/types/chat";
 
 export const OFFER_SELECT = `id, price, listed_price, status, expires_at, invoice_no,
-  accepted_at, order_id, listing:listings!listing_id ( title )`;
+  accepted_at, order_id, proposed_by, listing:listings!listing_id ( title )`;
 
 export function toOfferInfo(row: any): OfferInfo {
   return {
@@ -15,6 +15,7 @@ export function toOfferInfo(row: any): OfferInfo {
     acceptedAt: row.accepted_at ?? null,
     orderId: row.order_id ?? null,
     listingTitle: one<any>(row.listing)?.title ?? "Listing",
+    proposedBy: row.proposed_by === "buyer" ? "buyer" : "seller",
   };
 }
 

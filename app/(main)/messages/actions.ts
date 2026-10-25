@@ -18,6 +18,20 @@ export async function sendOffer(
   return error ? { error: error.message } : {};
 }
 
+export async function sendBuyerOffer(
+  conversationId: string,
+  listingId: string,
+  price: number,
+): Promise<Result> {
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("create_buyer_offer", {
+    conv: conversationId,
+    lid: listingId,
+    amount: price,
+  });
+  return error ? { error: error.message } : {};
+}
+
 export async function acceptOffer(offerId: string): Promise<Result> {
   const supabase = await createClient();
   const { error } = await supabase.rpc("accept_offer", { offer: offerId });
