@@ -22,7 +22,7 @@ import { ListingGallery } from "@/components/ListingGallery";
 import { ReviewForm } from "@/components/ReviewForm";
 import { PhotoGrid } from "@/components/PhotoGrid";
 import { ReportDialog } from "@/components/ReportDialog";
-import { startConversation, startOfferConversation } from "./actions";
+import { startOfferConversation } from "./actions";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -232,15 +232,6 @@ async function ListingContent({ params }: { params: Promise<{ id: string }> }) {
                   image: images[0] ?? null,
                 }}
               />
-              <form action={startConversation.bind(null, listing.id)}>
-                <Button variant="outline" className="w-full" type="submit">
-                  <MessageCircle />
-                  Message Seller
-                </Button>
-              </form>
-              <p className="text-xs text-muted-foreground">
-                Want a different price? Message the seller to make an offer.
-              </p>
               <form action={startOfferConversation.bind(null, listing.id)}>
                 <Button variant="outline" className="w-full" type="submit">
                   <Tag />
@@ -251,6 +242,7 @@ async function ListingContent({ params }: { params: Promise<{ id: string }> }) {
                 Want a different price? Make an offer and the seller can accept
                 or decline.
               </p>
+
               <div className="flex gap-2">
                 <ReportDialog
                   kind="listing"
