@@ -36,8 +36,6 @@ function getServiceClient() {
 }
 
 const head = { count: "exact", head: true } as const;
-const countOf = async (q: PromiseLike<{ count: number | null }>) =>
-  (await q).count ?? 0;
 
 export default function AdminPage() {
   return (
@@ -61,6 +59,7 @@ async function AdminContent() {
   let page = 1;
   const perPage = 100;
 
+  // Note: Consider replacing this loop with searchParams-based server pagination for production scale
   while (true) {
     const { data, error } = await service.auth.admin.listUsers({
       page,
@@ -76,9 +75,9 @@ async function AdminContent() {
   const [
     profilesResult,
     listingsResult,
-    openReports,
-    openDisputes,
-    paidOrders,
+    openReportsRes,
+    openDisputesRes,
+    paidOrdersRes,
     reportRows,
     disputeRows,
     revenueRes,
@@ -93,17 +92,12 @@ async function AdminContent() {
       .select(
         "id, title, price, status, created_at, seller_id, category:categories!category_id ( name )",
       ),
-    countOf(supabase.from("reports").select("*", head).eq("status", "open")),
-    countOf(
-      supabase
-        .from("disputes")
-        .select("*", head)
-        .in("status", ["open", "in_review"]),
-    ),
-    countOf(
-      supabase.from("orders").select("*", head).eq("payment_status", "paid"),
-    ),
-    supabase.from("orders").select("total").eq("payment_status", "paid"),
+    supabase.from("reports").select("*", head).eq("status", "open"),
+    supabase
+      .from("disputes")
+      .select("*", head)
+      .in("status", ["open", "in_review"]),
+    supabase.from("orders").select("*", head).eq("payment_status", "paid"),
     supabase
       .from("reports")
       .select(
@@ -143,6 +137,9 @@ async function AdminContent() {
 
   const profiles = profilesResult.data ?? [];
   const rawListings = listingsResult.data ?? [];
+  const openReports = openReportsRes.count ?? 0;
+  const openDisputes = openDisputesRes.count ?? 0;
+  const paidOrders = paidOrdersRes.count ?? 0;
 
   const profilesById = new Map(profiles.map((p) => [p.id, p]));
   const authUsersById = new Map(authUsers.map((u) => [u.id, u]));
@@ -197,20 +194,12 @@ async function AdminContent() {
     };
   });
 
-  const rev = (revenueRes.data ?? []) as any[];
-  const salesVolume = rev.reduce((s, r) => s + Number(r.sales_volume), 0);
+  const rev = revenueRes.data ?? [];
+  const salesVolume = rev.reduce((s, r) => s + Number(r.sales_volume ?? 0), 0);
   const platformFees = rev.reduce(
-    (s, r) => s + Number(r.buyer_fees) + Number(r.seller_fees),
+    (s, r) => s + Number(r.buyer_fees ?? 0) + Number(r.seller_fees ?? 0),
     0,
   );
-
-  <SectionCards
-    users={users}
-    totalListings={listings.length}
-    salesVolume={salesVolume}
-    platformFees={platformFees}
-    paidOrders={paidOrders}
-  />;
 
   const activity = [
     { label: "Open reports", value: openReports },
@@ -219,129 +208,128 @@ async function AdminContent() {
     { label: "Revenue", value: rand(salesVolume) },
   ];
 
-  const reports = (reportRows.data ?? []) as any[];
-  const disputes = (disputeRows.data ?? []) as any[];
+  const reports = reportRows.data ?? [];
+  const disputes = disputeRows.data ?? [];
 
   return (
-    <>
-      <div className="flex flex-1 flex-col">
-        <div className="@container/main flex flex-1 flex-col gap-2">
-          <div className="flex flex-col gap-6 py-4 md:py-6">
-            {/* Top summary metrics */}
-            <SectionCards
-              users={users}
-              totalListings={listings.length}
-              salesVolume={salesVolume}
-              platformFees={platformFees}
-              paidOrders={paidOrders}
-            />
-            {/* Orders and moderation numbers */}
-            <div className="grid grid-cols-2 gap-4 px-4 lg:grid-cols-4 lg:px-6">
-              {activity.map((item) => (
-                <Card key={item.label} className="bg-navy">
-                  <CardContent className="space-y-1 p-4">
-                    <p className="text-xs text-white">{item.label}</p>
-                    <p className="text-2xl font-semibold text-gold">
-                      {item.value}
-                    </p>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+    <div className="flex flex-1 flex-col">
+      <div className="@container/main flex flex-1 flex-col gap-2">
+        <div className="flex flex-col gap-6 py-4 md:py-6">
+          {/* Top summary metrics */}
+          <SectionCards
+            users={users}
+            totalListings={listings.length}
+            salesVolume={salesVolume}
+            platformFees={platformFees}
+            paidOrders={paidOrders}
+          />
 
-            {/* Moderation queues */}
-            <div className="grid gap-6 px-4 lg:grid-cols-2 lg:px-6">
-              <section className="space-y-3">
-                <h2 className="text-lg font-semibold">Open reports</h2>
-                {reports.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">
-                    Nothing to review.
+          {/* Orders and moderation numbers */}
+          <div className="grid grid-cols-2 gap-4 px-4 lg:grid-cols-4 lg:px-6">
+            {activity.map((item) => (
+              <Card key={item.label} className="bg-navy">
+                <CardContent className="space-y-1 p-4">
+                  <p className="text-xs text-white">{item.label}</p>
+                  <p className="text-2xl font-semibold text-gold">
+                    {item.value}
                   </p>
-                ) : (
-                  <ul className="divide-y rounded-xl">
-                    {reports.map((r) => {
-                      const target =
-                        r.kind === "listing"
-                          ? (one<any>(r.listing)?.title ?? "Deleted listing")
-                          : r.kind === "user"
-                            ? nameOf(one<any>(r.target))
-                            : "Problem report";
-                      return (
-                        <li key={r.id}>
-                          <Link
-                            href={`/admin/reports/${r.id}`}
-                            className="flex items-center justify-between gap-3 p-3 hover:bg-muted/50"
-                          >
-                            <div className="min-w-0">
-                              <p className="truncate text-sm font-medium">
-                                <span className="capitalize">{r.kind}</span>:{" "}
-                                {target}
-                              </p>
-                              <p className="truncate text-xs text-muted-foreground">
-                                {r.reason} · by {nameOf(one<any>(r.reporter))} ·{" "}
-                                {formatDate(r.created_at)}
-                              </p>
-                            </div>
-                            <StatusBadge status="open" />
-                          </Link>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                )}
-              </section>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
 
-              <section className="space-y-3">
-                <h2 className="text-lg font-semibold">Open disputes</h2>
-                {disputes.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">No disputes.</p>
-                ) : (
-                  <ul className="divide-y rounded-xl border">
-                    {disputes.map((d) => (
-                      <li key={d.id}>
+          {/* Moderation queues */}
+          <div className="grid gap-6 px-4 lg:grid-cols-2 lg:px-6">
+            <section className="space-y-3">
+              <h2 className="text-lg font-semibold">Open reports</h2>
+              {reports.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  Nothing to review.
+                </p>
+              ) : (
+                <ul className="divide-y rounded-xl">
+                  {reports.map((r: any) => {
+                    const target =
+                      r.kind === "listing"
+                        ? (one<any>(r.listing)?.title ?? "Deleted listing")
+                        : r.kind === "user"
+                          ? nameOf(one<any>(r.target))
+                          : "Problem report";
+                    return (
+                      <li key={r.id}>
                         <Link
-                          href={`/admin/disputes/${d.id}`}
+                          href={`/admin/reports/${r.id}`}
                           className="flex items-center justify-between gap-3 p-3 hover:bg-muted/50"
                         >
                           <div className="min-w-0">
                             <p className="truncate text-sm font-medium">
-                              Order {shortId(d.order_id)} ·{" "}
-                              {rand(one<any>(d.order)?.total)}
+                              <span className="capitalize">{r.kind}</span>:{" "}
+                              {target}
                             </p>
                             <p className="truncate text-xs text-muted-foreground">
-                              {d.reason} · by {nameOf(one<any>(d.opener))} ·{" "}
-                              {formatDate(d.created_at)}
+                              {r.reason} · by {nameOf(one<any>(r.reporter))} ·{" "}
+                              {formatDate(r.created_at)}
                             </p>
                           </div>
-                          <StatusBadge status={d.status} />
+                          <StatusBadge status="open" />
                         </Link>
                       </li>
-                    ))}
-                  </ul>
-                )}
-              </section>
-            </div>
+                    );
+                  })}
+                </ul>
+              )}
+            </section>
 
-            {/* User management */}
-            <div className="px-4 lg:px-6">
-              <h1 className="mb-1 text-2xl font-semibold">User Management</h1>
-              <p className="mb-4 text-sm text-muted-foreground">
-                All registered HubConnect users and their profile details.
-              </p>
-              <DataTable data={users} />
-            </div>
+            <section className="space-y-3">
+              <h2 className="text-lg font-semibold">Open disputes</h2>
+              {disputes.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No disputes.</p>
+              ) : (
+                <ul className="divide-y rounded-xl border">
+                  {disputes.map((d: any) => (
+                    <li key={d.id}>
+                      <Link
+                        href={`/admin/disputes/${d.id}`}
+                        className="flex items-center justify-between gap-3 p-3 hover:bg-muted/50"
+                      >
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-medium">
+                            Order {shortId(d.order_id)} ·{" "}
+                            {rand(one<any>(d.order)?.total)}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {d.reason} · by {nameOf(one<any>(d.opener))} ·{" "}
+                            {formatDate(d.created_at)}
+                          </p>
+                        </div>
+                        <StatusBadge status={d.status} />
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+          </div>
 
-            {/* Store management */}
-            <div className="px-4 lg:px-6">
-              <h1 className="mb-1 text-2xl font-semibold">Store Management</h1>
-              <p className="mb-4 text-sm text-muted-foreground">
-                All marketplace listings and seller accounts.
-              </p>
-              <ListingsTable data={listings} />
-            </div>
+          {/* User management */}
+          <div className="px-4 lg:px-6">
+            <h1 className="mb-1 text-2xl font-semibold">User Management</h1>
+            <p className="mb-4 text-sm text-muted-foreground">
+              All registered HubConnect users and their profile details.
+            </p>
+            <DataTable data={users} />
+          </div>
+
+          {/* Store management */}
+          <div className="px-4 lg:px-6">
+            <h1 className="mb-1 text-2xl font-semibold">Store Management</h1>
+            <p className="mb-4 text-sm text-muted-foreground">
+              All marketplace listings and seller accounts.
+            </p>
+            <ListingsTable data={listings} />
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }
