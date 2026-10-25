@@ -78,14 +78,14 @@ async function ConversationContent({
       .order("created_at", { ascending: false })
       .limit(200),
     supabase.from("offers").select(OFFER_SELECT).eq("conversation_id", id),
-    role === "seller"
-      ? supabase
-          .from("listings")
-          .select("id, title, price")
-          .eq("seller_id", conversation.seller_id)
-          .eq("status", "active")
-          .order("title")
-      : Promise.resolve({ data: [] as any[] }),
+    // The seller's active listings, for both sides: the seller offers on their own items,
+    // the buyer offers on the seller's items
+    supabase
+      .from("listings")
+      .select("id, title, price")
+      .eq("seller_id", conversation.seller_id)
+      .eq("status", "active")
+      .order("title"),
   ]);
 
   const byId = new Map((profiles ?? []).map((p: any) => [p.id, p]));
@@ -109,12 +109,13 @@ async function ConversationContent({
   const offers: Record<string, OfferInfo> = {};
   for (const row of offerRows ?? []) offers[row.id] = toOfferInfo(row);
 
-  const listing = one<any>(conversation.listing);
   const offerListings = (sellerListings ?? []).map((l: any) => ({
     id: l.id as string,
     title: l.title as string,
     price: l.price != null ? Number(l.price) : null,
   }));
+
+  const listing = one<any>(conversation.listing);
 
   return (
     <>
