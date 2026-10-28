@@ -50,19 +50,7 @@ async function OrdersContent() {
     .order("created_at", { ascending: false });
 
   const orders = (data ?? []) as any[];
-  const orderIds = [
-    ...new Set(items.map((i) => one<any>(i.order)?.id).filter(Boolean)),
-  ] as string[];
-
-  const { data: disputeRows } = orderIds.length
-    ? await supabase
-        .from("disputes")
-        .select("order_id")
-        .in("order_id", orderIds)
-        .in("status", ["open", "in_review"])
-    : { data: [] as { order_id: string }[] };
-
-  const disputed = new Set((disputeRows ?? []).map((d) => d.order_id));
+  
 
   if (orders.length === 0) {
     return (
