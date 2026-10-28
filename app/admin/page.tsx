@@ -12,6 +12,7 @@ import { StatusBadge } from "@/components/StatusBadge";
 import { Card, CardContent } from "@/components/ui/card";
 import { requireAdmin } from "@/lib/admin";
 import { formatDate, nameOf, one, rand, shortId } from "@/lib/format";
+import { getOpenDisputes } from "@/lib/admin-queue";
 
 export type AdminUser = {
   id: string;
@@ -93,10 +94,7 @@ async function AdminContent() {
         "id, title, price, status, created_at, seller_id, category:categories!category_id ( name )",
       ),
     supabase.from("reports").select("*", head).eq("status", "open"),
-    supabase
-      .from("disputes")
-      .select("*", head)
-      .in("status", ["open", "in_review"]),
+    getOpenDisputes(supabase),
     supabase.from("orders").select("*", head).eq("payment_status", "paid"),
     supabase
       .from("reports")
@@ -135,10 +133,13 @@ async function AdminContent() {
     );
   }
 
+  const openDisputeRows = disputeRows.data ?? [];
+  const disputesError = disputeRows.error;
+
   const profiles = profilesResult.data ?? [];
   const rawListings = listingsResult.data ?? [];
   const openReports = openReportsRes.count ?? 0;
-  const openDisputes = openDisputesRes.count ?? 0;
+  const openDisputes = openDisputesRes.rows?.length ?? 0;
   const paidOrders = paidOrdersRes.count ?? 0;
 
   const profilesById = new Map(profiles.map((p) => [p.id, p]));
@@ -209,7 +210,7 @@ async function AdminContent() {
   ];
 
   const reports = reportRows.data ?? [];
-  const disputes = disputeRows.data ?? [];
+  const disputes = openDisputeRows;
 
   return (
     <div className="flex flex-1 flex-col">
@@ -247,7 +248,7 @@ async function AdminContent() {
                   Nothing to review.
                 </p>
               ) : (
-                <ul className="divide-y rounded-xl">
+                <ul className="divide-y rounded-xl border">
                   {reports.map((r: any) => {
                     const target =
                       r.kind === "listing"
@@ -281,31 +282,49 @@ async function AdminContent() {
             </section>
 
             <section className="space-y-3">
-              <h2 className="text-lg font-semibold">Open disputes</h2>
-              {disputes.length === 0 ? (
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold">Open disputes</h2>
+                <Link
+                  href="/admin/disputes"
+                  className="text-sm text-primary underline-offset-4 hover:underline"
+                >
+                  View all
+                </Link>
+              </div>
+
+              {disputesError ? (
+                <p className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">
+                  Couldn't load disputes: {disputesError.message}
+                </p>
+              ) : disputes.length === 0 ? (
                 <p className="text-sm text-muted-foreground">No disputes.</p>
               ) : (
                 <ul className="divide-y rounded-xl border">
-                  {disputes.map((d: any) => (
-                    <li key={d.id}>
-                      <Link
-                        href={`/admin/disputes/${d.id}`}
-                        className="flex items-center justify-between gap-3 p-3 hover:bg-muted/50"
-                      >
-                        <div className="min-w-0">
-                          <p className="truncate text-sm font-medium">
-                            Order {shortId(d.order_id)} ·{" "}
-                            {rand(one<any>(d.order)?.total)}
-                          </p>
-                          <p className="truncate text-xs text-muted-foreground">
-                            {d.reason} · by {nameOf(one<any>(d.opener))} ·{" "}
-                            {formatDate(d.created_at)}
-                          </p>
-                        </div>
-                        <StatusBadge status={d.status} />
-                      </Link>
-                    </li>
-                  ))}
+                  {disputes.map((d: any) => {
+                    const opener = nameOf(one<any>(d.opener));
+                    const amount = one<any>(d.order)?.total;
+
+                    return (
+                      <li key={d.id}>
+                        <Link
+                          href={`/admin/disputes/${d.id}`}
+                          className="flex items-center justify-between gap-3 p-3 hover:bg-muted/50"
+                        >
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-medium">
+                              Order {shortId(d.order_id)}
+                              {amount != null ? ` · ${rand(amount)}` : ""}
+                            </p>
+                            <p className="truncate text-xs text-muted-foreground">
+                              {d.reason} · by {opener} ·{" "}
+                              {formatDate(d.created_at)}
+                            </p>
+                          </div>
+                          <StatusBadge status={d.status} />
+                        </Link>
+                      </li>
+                    );
+                  })}
                 </ul>
               )}
             </section>
