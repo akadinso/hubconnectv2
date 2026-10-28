@@ -56,11 +56,6 @@ const data = {
       icon: <FileTextIcon />,
     },
     {
-      title: "Disputes Management",
-      url: "/admin/disputes",
-      icon: <FileExclamationPointIcon />,
-    },
-    {
       title: "Seller Applications",
       url: "/admin/seller-applications",
       icon: <ShoppingBasket />,
