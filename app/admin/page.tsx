@@ -203,13 +203,11 @@ async function AdminContent() {
 
   const activity = [
     { label: "Open reports", value: openReports },
-    { label: "Open disputes", value: openDisputes },
     { label: "Paid orders", value: paidOrders },
     { label: "Revenue", value: rand(salesVolume) },
   ];
 
   const reports = reportRows.data ?? [];
-  const disputes = openDisputeRows;
 
   return (
     <div className="flex flex-1 flex-col">
